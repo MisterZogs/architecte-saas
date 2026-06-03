@@ -1,0 +1,50 @@
+services:
+  # ── CR de Chantier ─────────────────────────────────────────────────────────
+  cr-chantier:
+    build:
+      context: ./services/cr-chantier
+      dockerfile: Dockerfile.api
+    ports:
+      - "8003:8003"
+    environment:
+      - GLADIA_API_KEY=${GLADIA_API_KEY:-}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY:-}
+    volumes:
+      - ./services/cr-chantier:/app
+    restart: unless-stopped
+
+  # ── CCTP Generator ─────────────────────────────────────────────────────────
+  cctp:
+    build:
+      context: ./services/cctp
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY:-}
+      - DATABASE_URL=sqlite+aiosqlite:///./cctp.db
+    volumes:
+      - ./services/cctp:/app
+      - cctp_chromadb:/app/chroma_data
+    restart: unless-stopped
+
+  # ── Assistant PLU ──────────────────────────────────────────────────────────
+  plu:
+    build:
+      context: ./services/plu
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY:-}
+      - PDF_CACHE_DIR=/app/cache/pdfs
+    volumes:
+      - ./services/plu:/app
+      - plu_cache:/app/cache
+    restart: unless-stopped
+
+volumes:
+  cctp_chromadb:
+  plu_cache:
