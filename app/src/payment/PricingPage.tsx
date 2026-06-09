@@ -34,22 +34,39 @@ interface PaymentPlanCard {
 
 export const paymentPlanCards: Record<PaymentPlanId, PaymentPlanCard> = {
   [PaymentPlanId.Hobby]: {
-    name: prettyPaymentPlanName(PaymentPlanId.Hobby),
-    price: "$9.99",
-    description: "All you need to get started",
-    features: ["Limited monthly usage", "Basic support"],
+    name: "Starter",
+    price: "29 €",
+    description: "Pour découvrir les outils et les utiliser à la demande.",
+    features: [
+      "5 CCTP générés / mois",
+      "10 comptes rendus de chantier / mois",
+      "5 analyses PLU / mois",
+      "Export Word et PDF",
+      "Support par email",
+    ],
   },
   [PaymentPlanId.Pro]: {
-    name: prettyPaymentPlanName(PaymentPlanId.Pro),
-    price: "$19.99",
-    description: "Our most popular plan",
-    features: ["Unlimited monthly usage", "Priority customer support"],
+    name: "Pro",
+    price: "79 €",
+    description: "Pour un cabinet actif — usage illimité sur les 3 outils.",
+    features: [
+      "CCTP illimités",
+      "Comptes rendus illimités",
+      "Analyses PLU illimitées",
+      "Export Word et PDF",
+      "Support prioritaire",
+      "Accès aux nouvelles fonctionnalités en avant-première",
+    ],
   },
   [PaymentPlanId.Credits10]: {
-    name: prettyPaymentPlanName(PaymentPlanId.Credits10),
-    price: "$9.99",
-    description: "One-time purchase of 10 credits for your account",
-    features: ["Use credits for e.g. OpenAI API calls", "No expiration date"],
+    name: "Crédits à l'unité",
+    price: "15 €",
+    description: "Achat ponctuel de 10 crédits — sans engagement.",
+    features: [
+      "1 crédit = 1 CCTP, 1 CR ou 1 analyse PLU",
+      "Crédits sans date d'expiration",
+      "Idéal pour les projets occasionnels",
+    ],
   },
 };
 
@@ -121,16 +138,12 @@ const PricingPage = () => {
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div id="pricing" className="mx-auto max-w-4xl text-center">
           <h2 className="text-foreground mt-2 text-4xl font-bold tracking-tight sm:text-5xl">
-            Pick your <span className="text-primary">pricing</span>
+            Tarifs <span className="text-primary">simples et transparents</span>
           </h2>
         </div>
         <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-center text-lg leading-8">
-          Choose between Stripe, LemonSqueezy or Polar as your payment provider.
-          Just add your Product IDs! Try it out below with test credit card
-          number <br />
-          <span className="bg-muted text-muted-foreground rounded-md px-2 py-1 font-mono text-sm">
-            4242 4242 4242 4242 4242
-          </span>
+          Un projet standard avec 8 à 12 lots représente 2 à 3 jours de rédaction économisés.
+          Choisissez la formule adaptée à votre volume.
         </p>
         {errorMessage && (
           <Alert variant="destructive" className="mt-8">
@@ -211,7 +224,7 @@ const PricingPage = () => {
                     }
                     className="w-full"
                   >
-                    Manage Subscription
+                    Gérer mon abonnement
                   </Button>
                 ) : (
                   <Button
@@ -223,7 +236,7 @@ const PricingPage = () => {
                     className="w-full"
                     disabled={isPaymentLoading}
                   >
-                    {!!user ? "Buy plan" : "Log in to buy plan"}
+                    {!!user ? "Choisir ce plan" : "Se connecter pour souscrire"}
                   </Button>
                 )}
               </CardFooter>

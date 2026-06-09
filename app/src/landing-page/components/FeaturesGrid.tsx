@@ -31,8 +31,8 @@ const FeaturesGrid = ({ features, className = "" }: FeaturesGridProps) => {
       id="features"
     >
       <SectionTitle
-        title="Features"
-        description="These are some of the features of the product."
+        title="Pourquoi ArchitecteIA ?"
+        description="Des outils pensés pour la pratique quotidienne des architectes."
       />
       <div
         className={cn(
