@@ -97,6 +97,7 @@ export default function PluPage() {
       const res = await fetch(`${PLU_URL}/api/zone?adresse=${encodeURIComponent(adresse)}`);
       if (!res.ok) throw new Error('Adresse introuvable ou PLU non disponible');
       const data = await res.json();
+      setAdresseNormalisee(data.adresse_normalisee || adresse);
       setZoneInfo({
         zone: data.zone,
         type_zone: data.type_zone,
