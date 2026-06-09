@@ -20,6 +20,7 @@ interface ZoneInfo {
 }
 
 interface Verif {
+  article: string;
   statut: 'CONFORME' | 'NON_CONFORME' | 'A_VERIFIER' | 'NON_APPLICABLE';
   valeur_projet: string;
   valeur_reglementaire: string;
@@ -29,9 +30,9 @@ interface Verif {
 interface Rapport {
   commune: string;
   zone: string;
-  date_plu: string;
+  date_document_plu: string;
   adresse: string;
-  verifications: Record<string, Verif>;
+  verifications: Verif[];
 }
 
 interface ProjetForm {
