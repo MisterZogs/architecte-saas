@@ -317,7 +317,7 @@ export default function PluPage() {
             <div>
               <h2 className="text-xl font-bold">Rapport de conformité</h2>
               <p className="text-sm text-muted-foreground">
-                Zone {rapport.zone} — {rapport.commune} — PLU du {rapport.date_plu || '—'}
+                Zone {rapport.zone} — {rapport.commune} — PLU du {rapport.date_document_plu || '—'}
               </p>
             </div>
             <div className="flex gap-2">
