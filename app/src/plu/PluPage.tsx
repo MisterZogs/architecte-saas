@@ -245,7 +245,7 @@ export default function PluPage() {
                   </p>
                   <p className="text-xs text-muted-foreground">ID document : {zoneInfo.id_urba}</p>
                 </div>
-                <Button size="sm" variant="ghost" className="ml-auto" onClick={() => { setStep('adresse'); setZoneInfo(null); }}>
+                <Button size="sm" variant="ghost" className="ml-auto" onClick={() => { setStep('adresse'); setZoneInfo(null); setAdresseNormalisee(''); }}>
                   Modifier
                 </Button>
               </div>
