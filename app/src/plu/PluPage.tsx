@@ -190,10 +190,10 @@ export default function PluPage() {
     </div>
   );
 
-  const verifications = rapport?.verifications ?? {};
-  const nbConformes = Object.values(verifications).filter(v => v.statut === 'CONFORME').length;
-  const nbNonConformes = Object.values(verifications).filter(v => v.statut === 'NON_CONFORME').length;
-  const nbAVerifier = Object.values(verifications).filter(v => v.statut === 'A_VERIFIER').length;
+  const verifications = rapport?.verifications ?? [];
+  const nbConformes = verifications.filter(v => v.statut === 'CONFORME').length;
+  const nbNonConformes = verifications.filter(v => v.statut === 'NON_CONFORME').length;
+  const nbAVerifier = verifications.filter(v => v.statut === 'A_VERIFIER').length;
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-10">
