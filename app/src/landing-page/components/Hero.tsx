@@ -1,7 +1,5 @@
 import { Link as WaspRouterLink, routes } from "wasp/client/router";
 import { Button } from "../../client/components/ui/button";
-import openSaasBannerDark from "../../client/static/open-saas-banner-dark.svg";
-import openSaasBannerLight from "../../client/static/open-saas-banner-light.svg";
 
 export default function Hero() {
   return (
@@ -11,48 +9,45 @@ export default function Hero() {
       <div className="md:p-24">
         <div className="max-w-8xl mx-auto px-6 lg:px-8">
           <div className="lg:mb-18 mx-auto max-w-3xl text-center">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-yellow-50 px-4 py-1.5 text-sm font-medium text-yellow-800 ring-1 ring-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:ring-yellow-800">
+              <span>Conçu pour les architectes français</span>
+            </div>
             <h1 className="text-foreground text-5xl font-bold sm:text-6xl">
-              Some <span className="italic">cool</span> words about{" "}
-              <span className="text-gradient-primary">your product</span>
+              Vos documents d'architecture,{" "}
+              <span className="text-gradient-primary italic">rédigés par l'IA</span>
             </h1>
             <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg leading-8">
-              With some more exciting words about your product!
+              Comptes rendus de chantier, CCTP, vérification PLU — 3 outils IA qui vous font gagner des heures chaque semaine.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Button size="lg" variant="outline" asChild>
                 <WaspRouterLink to={routes.PricingPageRoute.to}>
-                  Learn More
+                  Voir les tarifs
                 </WaspRouterLink>
               </Button>
               <Button size="lg" variant="default" asChild>
                 <WaspRouterLink to={routes.SignupRoute.to}>
-                  Get Started <span aria-hidden="true">→</span>
+                  Essayer gratuitement <span aria-hidden="true">→</span>
                 </WaspRouterLink>
               </Button>
             </div>
           </div>
-          <div className="mt-14 flow-root sm:mt-14">
-            <div className="m-2 hidden justify-center rounded-xl md:flex lg:-m-4 lg:rounded-2xl lg:p-4">
-              <img
-                src={openSaasBannerLight}
-                alt="App screenshot"
-                width={1000}
-                height={530}
-                loading="lazy"
-                className="rounded-md shadow-2xl ring-1 ring-gray-900/10 dark:hidden"
-              />
-              <img
-                src={openSaasBannerDark}
-                alt="App screenshot"
-                width={1000}
-                height={530}
-                loading="lazy"
-                className="hidden rounded-md shadow-2xl ring-1 ring-gray-900/10 dark:block"
-              />
-            </div>
+          <div className="mt-16 flex justify-center gap-8 text-center">
+            <StatItem value="80%" label="de temps économisé" />
+            <StatItem value="3" label="outils intégrés" />
+            <StatItem value="100%" label="réglementation française" />
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function StatItem({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="flex flex-col items-center">
+      <span className="text-gradient-primary text-4xl font-bold">{value}</span>
+      <span className="text-muted-foreground mt-1 text-sm">{label}</span>
     </div>
   );
 }

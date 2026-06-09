@@ -9,7 +9,8 @@ import { cn } from "../../client/utils";
 import { Feature } from "./Features";
 import SectionTitle from "./SectionTitle";
 
-export interface GridFeature extends Omit<Feature, "icon"> {
+export interface GridFeature extends Omit<Feature, "icon" | "href"> {
+  href?: string;
   icon?: React.ReactNode;
   emoji?: string;
   direction?: "col" | "row" | "col-reverse" | "row-reverse";

@@ -1,166 +1,112 @@
-import daBoiAvatar from "../client/static/da-boi.webp";
-import kivo from "../client/static/examples/kivo.webp";
-import messync from "../client/static/examples/messync.webp";
-import microinfluencerClub from "../client/static/examples/microinfluencers.webp";
-import promptpanda from "../client/static/examples/promptpanda.webp";
-import reviewradar from "../client/static/examples/reviewradar.webp";
-import scribeist from "../client/static/examples/scribeist.webp";
-import searchcraft from "../client/static/examples/searchcraft.webp";
-import { BlogUrl, DocsUrl } from "../shared/common";
 import type { GridFeature } from "./components/FeaturesGrid";
 
 export const features: GridFeature[] = [
   {
-    name: "Cool Feature 1",
-    description: "Your feature",
-    emoji: "🤝",
-    href: DocsUrl,
-    size: "small",
-  },
-  {
-    name: "Cool Feature 2",
-    description: "Feature description",
-    emoji: "🔐",
-    href: DocsUrl,
-    size: "small",
-  },
-  {
-    name: "Cool Feature 3",
-    description: "Describe your cool feature here",
-    emoji: "🥞",
-    href: DocsUrl,
+    name: "80% de temps économisé",
+    description: "Un compte rendu qui prenait 45 min s'écrit en moins de 5 min. Concentrez-vous sur votre métier.",
+    emoji: "⏱️",
     size: "medium",
   },
   {
-    name: "Cool Feature 4",
-    description: "Describe your cool feature here",
-    emoji: "💸",
-    href: DocsUrl,
-    size: "large",
-  },
-  {
-    name: "Cool Feature 5",
-    description: "Describe your cool feature here",
-    emoji: "💼",
-    href: DocsUrl,
-    size: "large",
-  },
-  {
-    name: "Cool Feature 6",
-    description: "It is cool",
-    emoji: "📈",
-    href: DocsUrl,
-    size: "small",
-  },
-  {
-    name: "Cool Feature 7",
-    description: "Cool feature",
-    emoji: "📧",
-    href: DocsUrl,
-    size: "small",
-  },
-  {
-    name: "Cool Feature 8",
-    description: "Describe your cool feature here",
+    name: "IA Mistral",
+    description: "Modèle IA français, entraîné sur la réglementation de la construction.",
     emoji: "🤖",
-    href: DocsUrl,
+    size: "small",
+  },
+  {
+    name: "Export Word & PDF",
+    description: "Documents formatés prêts à l'emploi.",
+    emoji: "📄",
+    size: "small",
+  },
+  {
+    name: "DTU & Normes NF intégrés",
+    description: "Les CCTP générés respectent les DTU et normes NF en vigueur. Les références réglementaires sont citées automatiquement dans le document.",
+    emoji: "✅",
+    size: "large",
+  },
+  {
+    name: "RAG sur vos PLU",
+    description: "Uploadez n'importe quel PLU. L'IA l'indexe et répond à vos questions avec les références précises des articles.",
+    emoji: "🏛️",
+    size: "large",
+  },
+  {
+    name: "Multi-projets",
+    description: "Gérez tous vos chantiers depuis un seul tableau de bord.",
+    emoji: "🏗️",
+    size: "small",
+  },
+  {
+    name: "Données confidentielles",
+    description: "Vos données restent sur vos serveurs.",
+    emoji: "🔒",
+    size: "small",
+  },
+  {
+    name: "Transcription multilocuteurs",
+    description: "Gladia détecte automatiquement les intervenants dans l'enregistrement.",
+    emoji: "🎙️",
     size: "medium",
   },
   {
-    name: "Cool Feature 9",
-    description: "Describe your cool feature here",
+    name: "Accès immédiat",
+    description: "Inscription en 30 secondes, aucune installation.",
     emoji: "🚀",
-    href: DocsUrl,
     size: "medium",
-  },
-];
-
-export const testimonials = [
-  {
-    name: "Da Boi",
-    role: "Wasp Mascot",
-    avatarSrc: daBoiAvatar,
-    socialUrl: "https://twitter.com/wasplang",
-    quote: "I don't even know how to code. I'm just a plushie.",
-  },
-  {
-    name: "Mr. Foobar",
-    role: "Founder @ Cool Startup",
-    avatarSrc: daBoiAvatar,
-    socialUrl: "",
-    quote: "This product makes me cooler than I already am.",
-  },
-  {
-    name: "Jamie",
-    role: "Happy Customer",
-    avatarSrc: daBoiAvatar,
-    socialUrl: "#",
-    quote: "My cats love it!",
   },
 ];
 
 export const faqs = [
   {
     id: 1,
-    question: "Whats the meaning of life?",
-    answer: "42.",
-    href: "https://en.wikipedia.org/wiki/42_(number)",
+    question: "Faut-il installer un logiciel ?",
+    answer:
+      "Non. ArchitecteIA est 100% en ligne, accessible depuis n'importe quel navigateur. Aucune installation requise.",
+  },
+  {
+    id: 2,
+    question: "Mes données de chantier sont-elles confidentielles ?",
+    answer:
+      "Oui. Vos fichiers audio, PLU et documents générés ne sont jamais partagés ni utilisés pour entraîner des modèles tiers. Les données restent sur nos serveurs sécurisés et vous pouvez les supprimer à tout moment.",
+  },
+  {
+    id: 3,
+    question: "L'IA comprend-elle les spécificités de la réglementation française ?",
+    answer:
+      "Oui. Nous utilisons Mistral, un modèle IA français, complété par une base de connaissances sur les DTU, normes NF et Eurocodes. Le générateur CCTP cite les références réglementaires applicables à chaque lot.",
+  },
+  {
+    id: 4,
+    question: "Puis-je utiliser mes propres PLU locaux ?",
+    answer:
+      "Oui, vous uploadez directement le PDF du PLU de votre commune. L'outil l'indexe en quelques secondes et vous pouvez ensuite poser toutes vos questions dessus.",
+  },
+  {
+    id: 5,
+    question: "Quels formats audio sont acceptés pour les comptes rendus ?",
+    answer:
+      "MP3, MP4, WAV, M4A, et la plupart des formats courants. Vous pouvez aussi dicter directement depuis le navigateur.",
+  },
+  {
+    id: 6,
+    question: "Quelle est la qualité des CCTP générés ?",
+    answer:
+      "Les CCTP sont générés à partir de templates conformes aux pratiques professionnelles, adaptés au descriptif de votre projet. Ils constituent une base solide que vous personnalisez ensuite selon vos exigences.",
   },
 ];
 
 export const footerNavigation = {
   app: [
-    { name: "Documentation", href: DocsUrl },
-    { name: "Blog", href: BlogUrl },
+    { name: "CR Chantier", href: "/cr-chantier" },
+    { name: "CCTP", href: "/cctp" },
+    { name: "Assistant PLU", href: "/plu" },
+    { name: "Tarifs", href: "/pricing" },
   ],
   company: [
-    { name: "About", href: "https://wasp.sh" },
-    { name: "Privacy", href: "#" },
-    { name: "Terms of Service", href: "#" },
+    { name: "Connexion", href: "/login" },
+    { name: "Inscription", href: "/signup" },
+    { name: "Confidentialité", href: "#" },
+    { name: "CGU", href: "#" },
   ],
 };
-
-export const examples = [
-  {
-    name: "Example #1",
-    description: "Describe your example here.",
-    imageSrc: kivo,
-    href: "#",
-  },
-  {
-    name: "Example #2",
-    description: "Describe your example here.",
-    imageSrc: messync,
-    href: "#",
-  },
-  {
-    name: "Example #3",
-    description: "Describe your example here.",
-    imageSrc: microinfluencerClub,
-    href: "#",
-  },
-  {
-    name: "Example #4",
-    description: "Describe your example here.",
-    imageSrc: promptpanda,
-    href: "#",
-  },
-  {
-    name: "Example #5",
-    description: "Describe your example here.",
-    imageSrc: reviewradar,
-    href: "#",
-  },
-  {
-    name: "Example #6",
-    description: "Describe your example here.",
-    imageSrc: scribeist,
-    href: "#",
-  },
-  {
-    name: "Example #7",
-    description: "Describe your example here.",
-    imageSrc: searchcraft,
-    href: "#",
-  },
-];
