@@ -362,7 +362,7 @@ export default function PluPage() {
                       <Icon className={`h-5 w-5 mt-0.5 flex-shrink-0 ${config.color}`} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-sm font-medium">{label}</p>
+                          <p className="text-sm font-medium">{verif.article}</p>
                           <span className={`text-xs font-semibold shrink-0 ${config.color}`}>
                             {config.label}
                           </span>
