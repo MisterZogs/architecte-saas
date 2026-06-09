@@ -71,6 +71,7 @@ export default function PluPage() {
   const { toast } = useToast();
   const [step, setStep] = useState<Step>('adresse');
   const [adresse, setAdresse] = useState('');
+  const [adresseNormalisee, setAdresseNormalisee] = useState('');
   const [zoneInfo, setZoneInfo] = useState<ZoneInfo | null>(null);
   const [loadingZone, setLoadingZone] = useState(false);
   const [rapport, setRapport] = useState<Rapport | null>(null);
