@@ -50,16 +50,6 @@ interface ProjetForm {
   nb_places: string;
 }
 
-const ARTICLE_LABELS: Record<string, string> = {
-  art6_recul_voie: 'Art. 6 — Recul front de rue',
-  art7_recul_limite: 'Art. 7 — Recul limites séparatives',
-  art8_implantation: 'Art. 8 — Implantation sur terrain',
-  art9_emprise_sol: 'Art. 9 — Emprise au sol (CES)',
-  art10_hauteur_max: 'Art. 10 — Hauteur maximale',
-  art11_aspect: 'Art. 11 — Aspect extérieur',
-  art12_stationnement: 'Art. 12 — Stationnement',
-  art13_espaces_libres: 'Art. 13 — Espaces libres',
-};
 
 const statutConfig = {
   CONFORME: { label: 'Conforme', icon: CheckCircle2, color: 'text-green-600', bg: 'bg-green-50 border-green-200' },
