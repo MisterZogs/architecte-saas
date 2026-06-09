@@ -234,7 +234,10 @@ export default function PluPage() {
               <div className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-blue-600 mt-0.5" />
                 <div className="text-sm space-y-1">
-                  <p className="font-semibold text-blue-900">{adresse}</p>
+                  <p className="font-semibold text-blue-900">{adresseNormalisee}</p>
+                  {adresseNormalisee.toLowerCase() !== adresse.toLowerCase() && (
+                    <p className="text-xs text-blue-600 italic">Saisie originale : « {adresse} »</p>
+                  )}
                   <p>
                     Zone <span className="font-bold">{zoneInfo.zone}</span>{' '}
                     <span className="text-muted-foreground">({zoneInfo.type_zone})</span>
