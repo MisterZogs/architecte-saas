@@ -352,12 +352,11 @@ export default function PluPage() {
           </div>
 
           <div className="space-y-2">
-            {Object.entries(verifications).map(([key, verif]) => {
+            {verifications.map((verif, idx) => {
               const config = statutConfig[verif.statut] ?? statutConfig.A_VERIFIER;
               const Icon = config.icon;
-              const label = ARTICLE_LABELS[key] || key;
               return (
-                <Card key={key} className={`border ${config.bg}`}>
+                <Card key={idx} className={`border ${config.bg}`}>
                   <CardContent className="pt-3 pb-3">
                     <div className="flex items-start gap-3">
                       <Icon className={`h-5 w-5 mt-0.5 flex-shrink-0 ${config.color}`} />
