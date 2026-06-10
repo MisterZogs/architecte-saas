@@ -1,5 +1,5 @@
 #!/bin/bash
-REPO="/Users/gaetan/Documents/IA/architecte-saas"
+REPO="/Users/gaetan/Documents/IA/archi/architecte-saas"
 cd "$REPO" || exit 1
 git diff --quiet && git diff --cached --quiet && exit 0
 DATE=$(date '+%Y-%m-%d %H:%M')
