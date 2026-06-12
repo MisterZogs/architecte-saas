@@ -249,12 +249,12 @@ export default function PluPage() {
               {zoneInfo.lat && zoneInfo.lon && (
                 <div className="rounded-md overflow-hidden border border-blue-200">
                   <img
-                    src={`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${zoneInfo.lon - 0.0020},${zoneInfo.lat - 0.0012},${zoneInfo.lon + 0.0020},${zoneInfo.lat + 0.0012}&bboxSR=4326&imageSR=4326&size=800,300&format=png&f=image`}
+                    src={`https://data.geopf.fr/wms-r/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=ORTHOIMAGERY.ORTHOPHOTOS&STYLES=&FORMAT=image/jpeg&BBOX=${zoneInfo.lat - 0.0012},${zoneInfo.lon - 0.0020},${zoneInfo.lat + 0.0012},${zoneInfo.lon + 0.0020}&WIDTH=800&HEIGHT=300&CRS=EPSG:4326`}
                     alt="Vue satellite"
                     className="w-full h-48 object-cover"
                     onError={e => (e.currentTarget.style.display = 'none')}
                   />
-                  <p className="text-xs text-blue-500 text-right px-2 py-1">© Esri World Imagery</p>
+                  <p className="text-xs text-blue-500 text-right px-2 py-1">© IGN — Géoportail France</p>
                 </div>
               )}
             </CardContent>
