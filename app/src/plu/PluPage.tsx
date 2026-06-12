@@ -97,6 +97,8 @@ export default function PluPage() {
         commune: data.commune,
         id_urba: data.id_urba,
         date_document: data.nom_fichier_reglement || '—',
+        lat: data.lat,
+        lon: data.lon,
       });
       setStep('projet');
     } catch (err: any) {
