@@ -247,12 +247,12 @@ export default function PluPage() {
               {zoneInfo.lat && zoneInfo.lon && (
                 <div className="rounded-md overflow-hidden border border-blue-200">
                   <img
-                    src={`https://wxs.ign.fr/essentiels/geoportail/r/wms?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS=ORTHOIMAGERY.ORTHOPHOTOS&STYLES=&FORMAT=image/png&CRS=EPSG:4326&WIDTH=800&HEIGHT=300&BBOX=${zoneInfo.lat - 0.0012},${zoneInfo.lon - 0.0020},${zoneInfo.lat + 0.0012},${zoneInfo.lon + 0.0020}`}
-                    alt="Vue satellite IGN"
+                    src={`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${zoneInfo.lon - 0.0020},${zoneInfo.lat - 0.0012},${zoneInfo.lon + 0.0020},${zoneInfo.lat + 0.0012}&bboxSR=4326&imageSR=4326&size=800,300&format=png&f=image`}
+                    alt="Vue satellite"
                     className="w-full h-48 object-cover"
                     onError={e => (e.currentTarget.style.display = 'none')}
                   />
-                  <p className="text-xs text-blue-500 text-right px-2 py-1">© IGN Géoportail</p>
+                  <p className="text-xs text-blue-500 text-right px-2 py-1">© Esri World Imagery</p>
                 </div>
               )}
             </CardContent>
