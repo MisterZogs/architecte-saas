@@ -35,6 +35,8 @@ interface Rapport {
   date_document_plu: string;
   adresse: string;
   verifications: Verif[];
+  lat?: number;
+  lon?: number;
 }
 
 interface ProjetForm {
