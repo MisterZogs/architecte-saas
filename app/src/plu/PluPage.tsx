@@ -225,7 +225,7 @@ export default function PluPage() {
       {(step === 'projet' || step === 'verifying') && zoneInfo && (
         <div className="space-y-6">
           <Card className="border-blue-200 bg-blue-50">
-            <CardContent className="pt-4">
+            <CardContent className="pt-4 space-y-3">
               <div className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-blue-600 mt-0.5" />
                 <div className="text-sm space-y-1">
@@ -244,6 +244,17 @@ export default function PluPage() {
                   Modifier
                 </Button>
               </div>
+              {zoneInfo.lat && zoneInfo.lon && (
+                <div className="rounded-md overflow-hidden border border-blue-200">
+                  <img
+                    src={`https://wxs.ign.fr/essentiels/geoportail/r/wms?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS=ORTHOIMAGERY.ORTHOPHOTOS&STYLES=&FORMAT=image/png&CRS=EPSG:4326&WIDTH=800&HEIGHT=300&BBOX=${zoneInfo.lat - 0.0012},${zoneInfo.lon - 0.0020},${zoneInfo.lat + 0.0012},${zoneInfo.lon + 0.0020}`}
+                    alt="Vue satellite IGN"
+                    className="w-full h-48 object-cover"
+                    onError={e => (e.currentTarget.style.display = 'none')}
+                  />
+                  <p className="text-xs text-blue-500 text-right px-2 py-1">© IGN Géoportail</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
