@@ -17,6 +17,8 @@ interface ZoneInfo {
   commune: string;
   id_urba: string;
   date_document: string;
+  lat?: number;
+  lon?: number;
 }
 
 interface Verif {
