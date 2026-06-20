@@ -271,7 +271,7 @@ export default function CrChantierPage() {
       await saveCr({
         projet,
         dateReunion: crData.date_reunion || undefined,
-        crData: crData as object,
+        crData: crData as unknown as Record<string, unknown>,
       });
       setIsSaved(true);
       refetchHistory();
