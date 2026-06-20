@@ -87,7 +87,7 @@ export default function NavBar({
                     },
                   )}
                 >
-                  Your SaaS
+                  ArchitecteIA
                 </span>
               </WaspRouterLink>
 
