@@ -331,6 +331,33 @@ export default function CctpPage() {
           <Button size="lg" className="w-full" onClick={handleGenerate} disabled={selectedLots.size === 0}>
             Générer les CCTP ({selectedLots.size} lot{selectedLots.size > 1 ? 's' : ''}) →
           </Button>
+
+          {projectHistory.length > 0 && (
+            <div className="space-y-2">
+              <h2 className="text-lg font-semibold">Projets précédents</h2>
+              {projectHistory.map(proj => (
+                <div key={proj.id} className="flex items-center justify-between p-3 border rounded-lg text-sm">
+                  <div>
+                    <p className="font-medium">{proj.name}</p>
+                    <p className="text-muted-foreground text-xs capitalize">
+                      {proj.type_projet} · {proj.usage} · {new Date(proj.created_at).toLocaleDateString('fr-FR')}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => loadProject(proj)}>Ouvrir</Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteProjectHistory(proj.id)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
