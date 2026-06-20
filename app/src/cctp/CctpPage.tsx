@@ -145,6 +145,38 @@ export default function CctpPage() {
 
   const downloadAll = () => results.forEach(downloadLot);
 
+  const startEdit = (cctp: CctpResult) => {
+    setEditingLot(cctp.id);
+    setEditContent(cctp.content);
+    setExpandedLot(cctp.id);
+  };
+
+  const cancelEdit = () => {
+    setEditingLot(null);
+    setEditContent('');
+  };
+
+  const saveEdit = async (cctp: CctpResult) => {
+    setSavingLot(cctp.id);
+    try {
+      const res = await fetch(`${CCTP_URL}/api/v1/cctp/${cctp.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: editContent }),
+      });
+      if (!res.ok) throw new Error('Erreur sauvegarde');
+      const updated = await res.json();
+      setResults(prev => prev.map(r => r.id === cctp.id ? { ...r, content: updated.content } : r));
+      setEditingLot(null);
+      setEditContent('');
+      toast({ title: 'CCTP sauvegardé' });
+    } catch (err: any) {
+      toast({ title: 'Erreur sauvegarde', description: err.message, variant: 'destructive' });
+    } finally {
+      setSavingLot(null);
+    }
+  };
+
   return (
     <div className="container mx-auto max-w-4xl px-4 py-10">
       <div className="mb-8">
