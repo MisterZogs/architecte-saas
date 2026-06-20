@@ -159,6 +159,7 @@ export default function CctpPage() {
       setResults(generated);
       setStep('result');
       if (generated.length > 0) setExpandedLot(generated[0].id);
+      fetch(`${CCTP_URL}/api/v1/projects`).then(r => r.json()).then(setProjectHistory).catch(() => {});
     } catch (err: any) {
       toast({ title: 'Erreur', description: err.message, variant: 'destructive' });
       setStep('form');
