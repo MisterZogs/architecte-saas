@@ -300,7 +300,7 @@ export default function CrChantierPage() {
     try {
       let finalTranscription = transcription;
 
-      if (mode === 'audio' && audioFile) {
+      if ((mode === 'audio' || mode === 'record') && audioFile) {
         setProgressLabel('Transcription audio en cours…');
         setProgress(20);
         const formData = new FormData();
