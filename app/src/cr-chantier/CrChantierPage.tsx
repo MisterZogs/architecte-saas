@@ -124,6 +124,8 @@ export default function CrChantierPage() {
   const [projet, setProjet] = useState('');
   const [transcription, setTranscription] = useState('');
   const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [audioClips, setAudioClips] = useState<File[]>([]);
+  const [clipDurations, setClipDurations] = useState<number[]>([]);
   const [progress, setProgress] = useState(0);
   const [progressLabel, setProgressLabel] = useState('');
   const [crData, setCrData] = useState<CrData | null>(null);
@@ -138,6 +140,11 @@ export default function CrChantierPage() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const currentClipSecondsRef = useRef(0);
+
+  const formatTime = (s: number) =>
+    `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  const totalRecordingSeconds = clipDurations.reduce((a, b) => a + b, 0);
 
   const { data: history, refetch: refetchHistory } = useQuery(getCrsByUser);
 
