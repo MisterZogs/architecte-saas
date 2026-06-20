@@ -439,6 +439,15 @@ export default function CrChantierPage() {
               <Button onClick={() => handleDownload('docx')} className="flex gap-2">
                 <Download className="h-4 w-4" /> Word
               </Button>
+              <Button
+                variant={isSaved ? 'outline' : 'default'}
+                onClick={handleSaveCr}
+                disabled={isSaving || isSaved}
+                className="flex gap-2"
+              >
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                {isSaved ? 'Sauvegardé' : 'Sauvegarder'}
+              </Button>
             </div>
           </div>
 
