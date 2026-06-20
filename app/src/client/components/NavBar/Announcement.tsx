@@ -1,33 +1,10 @@
-const ANNOUNCEMENT_URL = "https://github.com/wasp-lang/wasp";
-
 export function Announcement() {
   return (
-    <div className="from-accent to-secondary text-primary-foreground relative flex w-full items-center justify-center gap-3 bg-linear-to-r p-3 text-center font-semibold">
-      <a
-        href={ANNOUNCEMENT_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="hidden cursor-pointer transition-opacity hover:opacity-90 hover:drop-shadow-sm lg:block"
-      >
-        Support Open-Source Software!
-      </a>
-      <div className="bg-primary-foreground/20 hidden w-0.5 self-stretch lg:block"></div>
-      <a
-        href={ANNOUNCEMENT_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="bg-background/20 hover:bg-background/30 hidden cursor-pointer rounded-full px-2.5 py-1 text-xs tracking-wider transition-colors lg:block"
-      >
-        Star Our Repo on Github ⭐️ →
-      </a>
-      <a
-        href={ANNOUNCEMENT_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="bg-background/20 hover:bg-background/30 cursor-pointer rounded-full px-2.5 py-1 text-xs transition-colors lg:hidden"
-      >
-        ⭐️ Star the Our Repo and Support Open-Source! ⭐️
-      </a>
+    <div className="from-blue-600 to-blue-700 text-white relative flex w-full items-center justify-center gap-3 bg-linear-to-r px-4 py-2 text-center text-sm">
+      <span className="font-semibold">🚧 Bêta privée</span>
+      <span className="hidden sm:inline text-blue-100">
+        — Vos retours nous aident à améliorer l'outil. Merci de votre confiance.
+      </span>
     </div>
   );
 }
