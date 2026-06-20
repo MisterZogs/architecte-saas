@@ -52,6 +52,14 @@ interface ProjectForm {
   specificites: string;
 }
 
+interface ProjectHistory {
+  id: string;
+  name: string;
+  type_projet: string;
+  usage: string;
+  created_at: string;
+}
+
 export default function CctpPage() {
   const { toast } = useToast();
   const [step, setStep] = useState<Step>('form');
