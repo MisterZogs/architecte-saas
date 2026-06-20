@@ -427,7 +427,7 @@ export default function CrChantierPage() {
               </Button>
               <Button
                 variant={isEditing ? 'default' : 'outline'}
-                onClick={() => setIsEditing(prev => !prev)}
+                onClick={() => { setIsEditing(prev => !prev); if (!isEditing) setIsSaved(false); }}
                 className="flex gap-2"
               >
                 {isEditing ? <><Check className="h-4 w-4" /> Terminer</> : <><Pencil className="h-4 w-4" /> Éditer</>}
