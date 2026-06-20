@@ -396,6 +396,34 @@ export default function CrChantierPage() {
           <Button size="lg" className="w-full" onClick={handleGenerate}>
             Générer le compte rendu →
           </Button>
+
+          {/* Historique */}
+          {history && history.length > 0 && (
+            <div className="space-y-2">
+              <h2 className="text-lg font-semibold">Historique</h2>
+              {history.map((cr) => (
+                <div key={cr.id} className="flex items-center justify-between p-3 border rounded-lg text-sm">
+                  <div>
+                    <p className="font-medium">{cr.projet}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {cr.dateReunion ?? new Date(cr.createdAt).toLocaleDateString('fr-FR')}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => openSavedCr(cr)}>Ouvrir</Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteCr(cr.id)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
