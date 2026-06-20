@@ -11,7 +11,7 @@ export const getCrsByUser: GetCrsByUser<void, CrChantier[]> = async (_args, cont
 };
 
 export const saveCr: SaveCr<
-  { projet: string; dateReunion?: string; crData: object },
+  { projet: string; dateReunion?: string; crData: Record<string, unknown> },
   CrChantier
 > = async (args, context) => {
   if (!context.user) throw new HttpError(401);
