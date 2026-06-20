@@ -161,19 +161,26 @@ export default function CrChantierPage() {
       const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
       const recorder = new MediaRecorder(stream, { mimeType });
       chunksRef.current = [];
+      currentClipSecondsRef.current = 0;
       recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
       recorder.onstop = () => {
         stream.getTracks().forEach(t => t.stop());
         const blob = new Blob(chunksRef.current, { type: mimeType });
         const ext = mimeType.includes('webm') ? 'webm' : 'mp4';
-        setAudioFile(new File([blob], `enregistrement.${ext}`, { type: mimeType }));
+        const duration = currentClipSecondsRef.current;
+        setAudioClips(prev => [...prev, new File([blob], `enregistrement_${prev.length + 1}.${ext}`, { type: mimeType })]);
+        setClipDurations(prev => [...prev, duration]);
         if (timerRef.current) clearInterval(timerRef.current);
+        setRecordingSeconds(0);
       };
       recorder.start(1000);
       mediaRecorderRef.current = recorder;
       setIsRecording(true);
       setRecordingSeconds(0);
-      timerRef.current = setInterval(() => setRecordingSeconds(s => s + 1), 1000);
+      timerRef.current = setInterval(() => {
+        currentClipSecondsRef.current += 1;
+        setRecordingSeconds(s => s + 1);
+      }, 1000);
     } catch {
       toast({ title: 'Microphone inaccessible', description: 'Autorisez l\'accès au micro dans votre navigateur.', variant: 'destructive' });
     }
