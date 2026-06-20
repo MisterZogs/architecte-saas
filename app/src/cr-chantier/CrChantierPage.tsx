@@ -250,7 +250,7 @@ export default function CrChantierPage() {
     });
 
   const openSavedCr = (saved: CrChantier) => {
-    const data = saved.crData as CrData;
+    const data = saved.crData as unknown as CrData;
     setProjet(saved.projet);
     setCrData(data);
     setExpandedLots(new Set(data.lots?.map((l) => l.numero) ?? []));
