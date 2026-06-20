@@ -333,25 +333,59 @@ export default function CctpPage() {
               <Card key={cctp.id}>
                 <CardHeader
                   className="pb-2 cursor-pointer select-none"
-                  onClick={() => setExpandedLot(expandedLot === cctp.id ? null : cctp.id)}
+                  onClick={() => editingLot !== cctp.id && setExpandedLot(expandedLot === cctp.id ? null : cctp.id)}
                 >
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base">
                       LOT {cctp.lot_numero} — {cctp.lot_nom}
                     </CardTitle>
                     <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                      <Button size="sm" variant="ghost" onClick={() => downloadLot(cctp)} className="flex gap-1">
-                        <FileDown className="h-4 w-4" /> .docx
-                      </Button>
+                      {editingLot === cctp.id ? (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={() => saveEdit(cctp)}
+                            disabled={savingLot === cctp.id}
+                            className="flex gap-1"
+                          >
+                            {savingLot === cctp.id
+                              ? <Loader2 className="h-3 w-3 animate-spin" />
+                              : <Check className="h-3 w-3" />}
+                            Sauvegarder
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={cancelEdit} className="flex gap-1">
+                            <X className="h-3 w-3" /> Annuler
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button size="sm" variant="ghost" onClick={() => startEdit(cctp)} className="flex gap-1">
+                            <Pencil className="h-3 w-3" /> Éditer
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => downloadLot(cctp)} className="flex gap-1">
+                            <FileDown className="h-4 w-4" /> .docx
+                          </Button>
+                        </>
+                      )}
                       {expandedLot === cctp.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                     </div>
                   </div>
                 </CardHeader>
                 {expandedLot === cctp.id && (
                   <CardContent>
-                    <pre className="text-sm whitespace-pre-wrap font-sans leading-relaxed max-h-[500px] overflow-y-auto">
-                      {cctp.content}
-                    </pre>
+                    {editingLot === cctp.id ? (
+                      <textarea
+                        className="w-full min-h-[400px] font-mono text-sm leading-relaxed bg-muted/30 border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring resize-y"
+                        value={editContent}
+                        onChange={e => setEditContent(e.target.value)}
+                        spellCheck={false}
+                      />
+                    ) : (
+                      <pre className="text-sm whitespace-pre-wrap font-sans leading-relaxed max-h-[500px] overflow-y-auto">
+                        {cctp.content}
+                      </pre>
+                    )}
                   </CardContent>
                 )}
               </Card>
