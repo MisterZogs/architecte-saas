@@ -291,7 +291,7 @@ export default function CrChantierPage() {
 
   const handleGenerate = async () => {
     if (!projet.trim()) { toast({ title: 'Nom du projet requis', variant: 'destructive' }); return; }
-    if (mode === 'audio' && !audioFile) { toast({ title: 'Fichier audio requis', variant: 'destructive' }); return; }
+    if ((mode === 'audio' || mode === 'record') && !audioFile) { toast({ title: 'Fichier audio requis', variant: 'destructive' }); return; }
     if (mode === 'text' && !transcription.trim()) { toast({ title: 'Transcription requise', variant: 'destructive' }); return; }
 
     setStep('processing');
