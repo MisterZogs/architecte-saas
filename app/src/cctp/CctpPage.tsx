@@ -81,6 +81,32 @@ export default function CctpPage() {
   const [savingLot, setSavingLot] = useState<string | null>(null);
   const [generatingLot, setGeneratingLot] = useState<string>('');
   const [doneCount, setDoneCount] = useState(0);
+  const [projectHistory, setProjectHistory] = useState<ProjectHistory[]>([]);
+
+  useEffect(() => {
+    fetch(`${CCTP_URL}/api/v1/projects`)
+      .then(r => r.ok ? r.json() : [])
+      .then(setProjectHistory)
+      .catch(() => {});
+  }, []);
+
+  const loadProject = async (proj: ProjectHistory) => {
+    try {
+      const res = await fetch(`${CCTP_URL}/api/v1/projects/${proj.id}/cctp`);
+      if (!res.ok) throw new Error();
+      const cctps: CctpResult[] = await res.json();
+      setResults(cctps);
+      setStep('result');
+      if (cctps.length > 0) setExpandedLot(cctps[0].id);
+    } catch {
+      toast({ title: 'Impossible de charger ce projet', variant: 'destructive' });
+    }
+  };
+
+  const deleteProjectHistory = async (id: string) => {
+    await fetch(`${CCTP_URL}/api/v1/projects/${id}`, { method: 'DELETE' });
+    setProjectHistory(prev => prev.filter(p => p.id !== id));
+  };
 
   const toggleLot = (key: LotKey) =>
     setSelectedLots(prev => {
