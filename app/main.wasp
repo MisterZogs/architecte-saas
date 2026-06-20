@@ -152,6 +152,21 @@ page CrChantierPage {
   authRequired: true,
   component: import CrChantierPage from "@src/cr-chantier/CrChantierPage"
 }
+
+query getCrsByUser {
+  fn: import { getCrsByUser } from "@src/cr-chantier/operations",
+  entities: [CrChantier]
+}
+
+action saveCr {
+  fn: import { saveCr } from "@src/cr-chantier/operations",
+  entities: [CrChantier]
+}
+
+action deleteCr {
+  fn: import { deleteCr } from "@src/cr-chantier/operations",
+  entities: [CrChantier]
+}
 //#endregion
 
 //#region CCTP
