@@ -130,7 +130,11 @@ export default function CrChantierPage() {
   const [expandedLots, setExpandedLots] = useState<Set<string>>(new Set());
   const [isEditing, setIsEditing] = useState(false);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { data: history, refetch: refetchHistory } = useQuery(getCrsByUser);
 
   const toggleLot = (num: string) =>
     setExpandedLots(prev => {
