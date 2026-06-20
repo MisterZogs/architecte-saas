@@ -180,7 +180,7 @@ function NavBarMobileMenu({
           <SheetHeader>
             <SheetTitle className="flex items-center">
               <WaspRouterLink to={routes.LandingPageRoute.to}>
-                <span className="sr-only">Your SaaS</span>
+                <span className="sr-only">ArchitecteIA</span>
                 <NavLogo isScrolled={false} />
               </WaspRouterLink>
             </SheetTitle>
