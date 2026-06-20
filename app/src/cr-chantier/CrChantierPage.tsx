@@ -430,41 +430,66 @@ export default function CrChantierPage() {
               </div>
 
               {mode === 'record' && (
-                <div className="rounded-lg border-2 border-dashed p-8 text-center space-y-4">
-                  {!isRecording && !audioFile && (
-                    <>
-                      <Mic className="h-10 w-10 mx-auto text-muted-foreground" />
-                      <p className="font-medium">Cliquez pour démarrer l'enregistrement</p>
-                      <p className="text-sm text-muted-foreground">Votre navigateur accèdera au micro</p>
-                      <Button onClick={startRecording} size="lg" className="flex gap-2 mx-auto">
-                        <Mic className="h-4 w-4" /> Démarrer
-                      </Button>
-                    </>
+                <div className="rounded-lg border-2 border-dashed p-6 space-y-4">
+                  {/* Clips enregistrés */}
+                  {audioClips.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm font-medium">
+                        <span>{audioClips.length} extrait{audioClips.length > 1 ? 's' : ''} — durée totale : {formatTime(totalRecordingSeconds)}</span>
+                        <button
+                          onClick={() => { setAudioClips([]); setClipDurations([]); }}
+                          className="text-xs text-muted-foreground hover:text-destructive"
+                        >
+                          Tout effacer
+                        </button>
+                      </div>
+                      {audioClips.map((_, i) => (
+                        <div key={i} className="flex items-center justify-between bg-muted/40 rounded px-3 py-1.5 text-sm">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+                            <span>Extrait {i + 1}</span>
+                            <span className="text-muted-foreground font-mono text-xs">{formatTime(clipDurations[i])}</span>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setAudioClips(prev => prev.filter((_, j) => j !== i));
+                              setClipDurations(prev => prev.filter((_, j) => j !== i));
+                            }}
+                            className="text-muted-foreground hover:text-destructive"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   )}
-                  {isRecording && (
-                    <>
+
+                  {/* Enregistrement en cours */}
+                  {isRecording ? (
+                    <div className="text-center space-y-3">
                       <div className="flex items-center justify-center gap-3">
                         <span className="h-3 w-3 rounded-full bg-red-500 animate-pulse" />
-                        <span className="text-lg font-mono font-semibold">
-                          {String(Math.floor(recordingSeconds / 60)).padStart(2, '0')}:{String(recordingSeconds % 60).padStart(2, '0')}
-                        </span>
+                        <span className="text-lg font-mono font-semibold">{formatTime(recordingSeconds)}</span>
                       </div>
-                      <p className="text-muted-foreground text-sm">Enregistrement en cours…</p>
+                      <p className="text-muted-foreground text-sm">Enregistrement {audioClips.length + 1} en cours…</p>
                       <Button onClick={stopRecording} variant="destructive" size="lg" className="flex gap-2 mx-auto">
                         <Square className="h-4 w-4" /> Arrêter
                       </Button>
-                    </>
-                  )}
-                  {!isRecording && audioFile && (
-                    <>
-                      <CheckCircle2 className="h-8 w-8 mx-auto text-green-600" />
-                      <p className="font-medium text-green-700">
-                        Enregistrement terminé — {String(Math.floor(recordingSeconds / 60)).padStart(2, '0')}:{String(recordingSeconds % 60).padStart(2, '0')}
-                      </p>
-                      <Button variant="outline" size="sm" onClick={() => { setAudioFile(null); setRecordingSeconds(0); }}>
-                        Recommencer
+                    </div>
+                  ) : (
+                    <div className="text-center space-y-3">
+                      {audioClips.length === 0 && (
+                        <>
+                          <Mic className="h-10 w-10 mx-auto text-muted-foreground" />
+                          <p className="font-medium">Démarrez l'enregistrement</p>
+                          <p className="text-sm text-muted-foreground">Vous pouvez faire plusieurs extraits à la suite</p>
+                        </>
+                      )}
+                      <Button onClick={startRecording} size={audioClips.length === 0 ? 'lg' : 'default'} className="flex gap-2 mx-auto">
+                        <Mic className="h-4 w-4" />
+                        {audioClips.length === 0 ? 'Démarrer' : 'Reprendre l\'enregistrement'}
                       </Button>
-                    </>
+                    </div>
                   )}
                 </div>
               )}
