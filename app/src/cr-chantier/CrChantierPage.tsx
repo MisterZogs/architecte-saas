@@ -305,7 +305,8 @@ export default function CrChantierPage() {
 
   const handleGenerate = async () => {
     if (!projet.trim()) { toast({ title: 'Nom du projet requis', variant: 'destructive' }); return; }
-    if ((mode === 'audio' || mode === 'record') && !audioFile) { toast({ title: 'Fichier audio requis', variant: 'destructive' }); return; }
+    if (mode === 'record' && audioClips.length === 0) { toast({ title: 'Aucun enregistrement', description: 'Enregistrez au moins un extrait audio.', variant: 'destructive' }); return; }
+    if (mode === 'audio' && !audioFile) { toast({ title: 'Fichier audio requis', variant: 'destructive' }); return; }
     if (mode === 'text' && !transcription.trim()) { toast({ title: 'Transcription requise', variant: 'destructive' }); return; }
 
     setStep('processing');
@@ -314,7 +315,21 @@ export default function CrChantierPage() {
     try {
       let finalTranscription = transcription;
 
-      if ((mode === 'audio' || mode === 'record') && audioFile) {
+      if (mode === 'record' && audioClips.length > 0) {
+        const parts: string[] = [];
+        for (let i = 0; i < audioClips.length; i++) {
+          setProgressLabel(`Transcription enregistrement ${i + 1}/${audioClips.length}…`);
+          setProgress(10 + Math.round((i / audioClips.length) * 50));
+          const formData = new FormData();
+          formData.append('audio', audioClips[i]);
+          const res = await fetch(`${CR_URL}/api/transcribe`, { method: 'POST', body: formData });
+          if (!res.ok) throw new Error(`Erreur transcription clip ${i + 1}`);
+          const { transcription: t } = await res.json();
+          parts.push(t);
+        }
+        finalTranscription = parts.join('\n\n');
+        setProgress(60);
+      } else if (mode === 'audio' && audioFile) {
         setProgressLabel('Transcription audio en cours…');
         setProgress(20);
         const formData = new FormData();
