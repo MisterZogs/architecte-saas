@@ -10,7 +10,7 @@ import { Progress } from '../client/components/ui/progress';
 import { Separator } from '../client/components/ui/separator';
 import { useToast } from '../client/hooks/use-toast';
 import { Switch } from '../client/components/ui/switch';
-import { Download, Loader2, CheckCircle2, FileDown, ChevronDown, ChevronUp } from 'lucide-react';
+import { Download, Loader2, CheckCircle2, FileDown, ChevronDown, ChevronUp, Pencil, Check, X } from 'lucide-react';
 
 const CCTP_URL = (import.meta.env as any).REACT_APP_CCTP_URL || 'http://localhost:8001';
 
