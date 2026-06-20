@@ -68,6 +68,9 @@ export default function CctpPage() {
   const [selectedLots, setSelectedLots] = useState<Set<LotKey>>(new Set());
   const [results, setResults] = useState<CctpResult[]>([]);
   const [expandedLot, setExpandedLot] = useState<string | null>(null);
+  const [editingLot, setEditingLot] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState('');
+  const [savingLot, setSavingLot] = useState<string | null>(null);
   const [generatingLot, setGeneratingLot] = useState<string>('');
   const [doneCount, setDoneCount] = useState(0);
 
