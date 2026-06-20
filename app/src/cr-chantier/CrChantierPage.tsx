@@ -7,7 +7,7 @@ import { Progress } from '../client/components/ui/progress';
 import { useToast } from '../client/hooks/use-toast';
 import {
   Mic, FileText, Download, ChevronDown, ChevronUp,
-  Loader2, CheckCircle2, Upload, Pencil, Plus, X, Check,
+  Loader2, CheckCircle2, Upload, Pencil, Plus, X, Check, Camera,
 } from 'lucide-react';
 
 const CR_URL = (import.meta.env as any).REACT_APP_CR_URL || 'http://localhost:8003';
@@ -15,12 +15,20 @@ const CR_URL = (import.meta.env as any).REACT_APP_CR_URL || 'http://localhost:80
 type InputMode = 'audio' | 'text';
 type Step = 'input' | 'processing' | 'result';
 
+interface PhotoAttachment {
+  data: string;      // base64 sans le préfixe data URL
+  filename: string;
+  timestamp: string; // ISO — extrait de file.lastModified (= heure de prise sur mobile)
+  mime: string;
+}
+
 interface CrPoint {
   description: string;
   decision: string;
   action: string;
   responsable: string;
   delai: string;
+  photos?: PhotoAttachment[];
 }
 
 interface CrLot {
@@ -48,7 +56,7 @@ interface CrData {
   diffusion: string[];
 }
 
-// Inline editable field — renders plain text or an input/textarea depending on `editing`
+// Inline editable field
 function EF({
   value, onChange, editing, placeholder = '', multiline = false, className = '',
 }: {
@@ -84,6 +92,28 @@ function EF({
   );
 }
 
+const readPhotoFile = (file: File): Promise<PhotoAttachment> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      resolve({
+        data: result.split(',')[1],
+        filename: file.name,
+        timestamp: new Date(file.lastModified).toISOString(),
+        mime: file.type || 'image/jpeg',
+      });
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+const formatPhotoDate = (iso: string) =>
+  new Date(iso).toLocaleString('fr-FR', {
+    day: '2-digit', month: '2-digit', year: '2-digit',
+    hour: '2-digit', minute: '2-digit',
+  });
+
 export default function CrChantierPage() {
   const { toast } = useToast();
   const [step, setStep] = useState<Step>('input');
@@ -96,6 +126,7 @@ export default function CrChantierPage() {
   const [crData, setCrData] = useState<CrData | null>(null);
   const [expandedLots, setExpandedLots] = useState<Set<string>>(new Set());
   const [isEditing, setIsEditing] = useState(false);
+  const [isPdfLoading, setIsPdfLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const toggleLot = (num: string) =>
@@ -105,7 +136,6 @@ export default function CrChantierPage() {
       return next;
     });
 
-  // Generic deep-clone update via dotted path
   const update = (path: (string | number)[], value: any) => {
     setCrData(prev => {
       if (!prev) return prev;
@@ -127,7 +157,7 @@ export default function CrChantierPage() {
     setCrData(prev => {
       if (!prev) return prev;
       const next = JSON.parse(JSON.stringify(prev));
-      next.lots[lotIdx].points.push({ description: '', decision: '', action: '', responsable: '', delai: '' });
+      next.lots[lotIdx].points.push({ description: '', decision: '', action: '', responsable: '', delai: '', photos: [] });
       return next;
     });
 
@@ -151,6 +181,26 @@ export default function CrChantierPage() {
   const removeDiffusion = (idx: number) =>
     setCrData(prev => prev ? { ...prev, diffusion: prev.diffusion.filter((_, i) => i !== idx) } : prev);
 
+  const addPhoto = async (lotIdx: number, ptIdx: number, file: File) => {
+    const photo = await readPhotoFile(file);
+    setCrData(prev => {
+      if (!prev) return prev;
+      const next = JSON.parse(JSON.stringify(prev));
+      const point = next.lots[lotIdx].points[ptIdx];
+      if (!point.photos) point.photos = [];
+      point.photos.push(photo);
+      return next;
+    });
+  };
+
+  const removePhoto = (lotIdx: number, ptIdx: number, photoIdx: number) =>
+    setCrData(prev => {
+      if (!prev) return prev;
+      const next = JSON.parse(JSON.stringify(prev));
+      next.lots[lotIdx].points[ptIdx].photos?.splice(photoIdx, 1);
+      return next;
+    });
+
   const handleAudioDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
@@ -158,18 +208,9 @@ export default function CrChantierPage() {
   };
 
   const handleGenerate = async () => {
-    if (!projet.trim()) {
-      toast({ title: 'Nom du projet requis', variant: 'destructive' });
-      return;
-    }
-    if (mode === 'audio' && !audioFile) {
-      toast({ title: 'Fichier audio requis', variant: 'destructive' });
-      return;
-    }
-    if (mode === 'text' && !transcription.trim()) {
-      toast({ title: 'Transcription requise', variant: 'destructive' });
-      return;
-    }
+    if (!projet.trim()) { toast({ title: 'Nom du projet requis', variant: 'destructive' }); return; }
+    if (mode === 'audio' && !audioFile) { toast({ title: 'Fichier audio requis', variant: 'destructive' }); return; }
+    if (mode === 'text' && !transcription.trim()) { toast({ title: 'Transcription requise', variant: 'destructive' }); return; }
 
     setStep('processing');
     setProgress(10);
@@ -182,25 +223,22 @@ export default function CrChantierPage() {
         setProgress(20);
         const formData = new FormData();
         formData.append('audio', audioFile);
-        const transcribeRes = await fetch(`${CR_URL}/api/transcribe`, {
-          method: 'POST',
-          body: formData,
-        });
-        if (!transcribeRes.ok) throw new Error('Erreur transcription');
-        const { transcription: t } = await transcribeRes.json();
+        const res = await fetch(`${CR_URL}/api/transcribe`, { method: 'POST', body: formData });
+        if (!res.ok) throw new Error('Erreur transcription');
+        const { transcription: t } = await res.json();
         finalTranscription = t;
         setProgress(60);
       }
 
       setProgressLabel('Structuration du compte rendu…');
       setProgress(70);
-      const structureRes = await fetch(`${CR_URL}/api/structure`, {
+      const res = await fetch(`${CR_URL}/api/structure`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ transcription: finalTranscription, projet }),
       });
-      if (!structureRes.ok) throw new Error('Erreur structuration');
-      const cr = await structureRes.json();
+      if (!res.ok) throw new Error('Erreur structuration');
+      const cr = await res.json();
 
       setProgress(100);
       setCrData(cr);
@@ -214,24 +252,28 @@ export default function CrChantierPage() {
     }
   };
 
-  const handleDownload = async () => {
+  const handleDownload = async (format: 'docx' | 'pdf') => {
     if (!crData) return;
+    if (format === 'pdf') setIsPdfLoading(true);
     try {
-      const res = await fetch(`${CR_URL}/api/export`, {
+      const endpoint = format === 'pdf' ? `${CR_URL}/api/export/pdf` : `${CR_URL}/api/export`;
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cr: crData, projet }),
       });
-      if (!res.ok) throw new Error('Erreur export');
+      if (!res.ok) throw new Error(`Erreur export ${format.toUpperCase()}`);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `CR_Chantier_${projet.replace(/\s+/g, '_')}.docx`;
+      a.download = `CR_Chantier_${projet.replace(/\s+/g, '_')}.${format}`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      toast({ title: 'Erreur export', description: err.message, variant: 'destructive' });
+      toast({ title: `Erreur export ${format.toUpperCase()}`, description: err.message, variant: 'destructive' });
+    } finally {
+      if (format === 'pdf') setIsPdfLoading(false);
     }
   };
 
@@ -240,7 +282,7 @@ export default function CrChantierPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold">CR de Chantier</h1>
         <p className="text-muted-foreground mt-1">
-          Transformez un enregistrement ou une transcription en compte rendu structuré Word.
+          Transformez un enregistrement ou une transcription en compte rendu structuré Word ou PDF.
         </p>
       </div>
 
@@ -248,9 +290,7 @@ export default function CrChantierPage() {
       {step === 'input' && (
         <div className="space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle>1 — Nom du projet</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle>1 — Nom du projet</CardTitle></CardHeader>
             <CardContent>
               <Input
                 placeholder="ex. Maison Dupont — 12 rue des Lilas, Lyon"
@@ -267,18 +307,10 @@ export default function CrChantierPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-3">
-                <Button
-                  variant={mode === 'audio' ? 'default' : 'outline'}
-                  onClick={() => setMode('audio')}
-                  className="flex gap-2"
-                >
+                <Button variant={mode === 'audio' ? 'default' : 'outline'} onClick={() => setMode('audio')} className="flex gap-2">
                   <Mic className="h-4 w-4" /> Audio
                 </Button>
-                <Button
-                  variant={mode === 'text' ? 'default' : 'outline'}
-                  onClick={() => setMode('text')}
-                  className="flex gap-2"
-                >
+                <Button variant={mode === 'text' ? 'default' : 'outline'} onClick={() => setMode('text')} className="flex gap-2">
                   <FileText className="h-4 w-4" /> Transcription texte
                 </Button>
               </div>
@@ -338,21 +370,18 @@ export default function CrChantierPage() {
         </Card>
       )}
 
-      {/* ── Étape 3 : résultat + édition inline ── */}
+      {/* ── Étape 3 : résultat ── */}
       {step === 'result' && crData && (
         <div className="space-y-4">
 
           {/* Barre d'actions */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2 text-green-600">
               <CheckCircle2 className="h-5 w-5" />
               <span className="font-semibold">Compte rendu généré</span>
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => { setStep('input'); setProgress(0); setCrData(null); setIsEditing(false); }}
-              >
+            <div className="flex gap-2 flex-wrap">
+              <Button variant="outline" onClick={() => { setStep('input'); setProgress(0); setCrData(null); setIsEditing(false); }}>
                 Nouveau CR
               </Button>
               <Button
@@ -360,17 +389,19 @@ export default function CrChantierPage() {
                 onClick={() => setIsEditing(prev => !prev)}
                 className="flex gap-2"
               >
-                {isEditing
-                  ? <><Check className="h-4 w-4" /> Terminer</>
-                  : <><Pencil className="h-4 w-4" /> Éditer</>}
+                {isEditing ? <><Check className="h-4 w-4" /> Terminer</> : <><Pencil className="h-4 w-4" /> Éditer</>}
               </Button>
-              <Button onClick={handleDownload} className="flex gap-2">
-                <Download className="h-4 w-4" /> Télécharger Word
+              <Button variant="outline" onClick={() => handleDownload('pdf')} disabled={isPdfLoading} className="flex gap-2">
+                {isPdfLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+                PDF
+              </Button>
+              <Button onClick={() => handleDownload('docx')} className="flex gap-2">
+                <Download className="h-4 w-4" /> Word
               </Button>
             </div>
           </div>
 
-          {/* En-tête du CR */}
+          {/* En-tête */}
           <Card>
             <CardContent className="pt-4 text-sm">
               <div className="grid grid-cols-2 gap-x-6 gap-y-2">
@@ -394,37 +425,19 @@ export default function CrChantierPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-medium shrink-0">Date :</span>
-                  <EF
-                    value={crData.date_reunion || ''}
-                    onChange={v => update(['date_reunion'], v)}
-                    editing={isEditing}
-                    placeholder="YYYY-MM-DD"
-                  />
+                  <EF value={crData.date_reunion || ''} onChange={v => update(['date_reunion'], v)} editing={isEditing} placeholder="YYYY-MM-DD" />
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-medium shrink-0">Lieu :</span>
-                  <EF
-                    value={crData.lieu || ''}
-                    onChange={v => update(['lieu'], v)}
-                    editing={isEditing}
-                  />
+                  <EF value={crData.lieu || ''} onChange={v => update(['lieu'], v)} editing={isEditing} />
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-medium shrink-0">Prochaine réunion :</span>
-                  <EF
-                    value={crData.prochaine_reunion?.date || ''}
-                    onChange={v => update(['prochaine_reunion', 'date'], v)}
-                    editing={isEditing}
-                    placeholder="date"
-                  />
+                  <EF value={crData.prochaine_reunion?.date || ''} onChange={v => update(['prochaine_reunion', 'date'], v)} editing={isEditing} placeholder="date" />
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-medium shrink-0">Lieu suivant :</span>
-                  <EF
-                    value={crData.prochaine_reunion?.lieu || ''}
-                    onChange={v => update(['prochaine_reunion', 'lieu'], v)}
-                    editing={isEditing}
-                  />
+                  <EF value={crData.prochaine_reunion?.lieu || ''} onChange={v => update(['prochaine_reunion', 'lieu'], v)} editing={isEditing} />
                 </div>
               </div>
             </CardContent>
@@ -433,9 +446,7 @@ export default function CrChantierPage() {
           {/* Présents / Absents */}
           {(crData.presents?.length > 0 || isEditing) && (
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Présents</CardTitle>
-              </CardHeader>
+              <CardHeader className="pb-2"><CardTitle className="text-base">Présents</CardTitle></CardHeader>
               <CardContent className="space-y-1">
                 {crData.presents.map((p, i) => (
                   <div key={i} className="flex items-center gap-2 text-sm">
@@ -444,9 +455,7 @@ export default function CrChantierPage() {
                         <EF value={p.nom} onChange={v => update(['presents', i, 'nom'], v)} editing placeholder="Nom" className="flex-1" />
                         <EF value={p.qualite} onChange={v => update(['presents', i, 'qualite'], v)} editing placeholder="Qualité" className="flex-1" />
                         <EF value={p.entreprise} onChange={v => update(['presents', i, 'entreprise'], v)} editing placeholder="Entreprise" className="flex-1" />
-                        <button onClick={() => removeParticipant('presents', i)} className="text-muted-foreground hover:text-destructive shrink-0">
-                          <X className="h-4 w-4" />
-                        </button>
+                        <button onClick={() => removeParticipant('presents', i)} className="text-muted-foreground hover:text-destructive shrink-0"><X className="h-4 w-4" /></button>
                       </>
                     ) : (
                       <span>• {[p.nom, p.qualite, p.entreprise].filter(Boolean).join(' — ')}</span>
@@ -469,9 +478,7 @@ export default function CrChantierPage() {
                             <EF value={p.nom} onChange={v => update(['absents', i, 'nom'], v)} editing placeholder="Nom" className="flex-1" />
                             <EF value={p.qualite} onChange={v => update(['absents', i, 'qualite'], v)} editing placeholder="Qualité" className="flex-1" />
                             <EF value={p.entreprise} onChange={v => update(['absents', i, 'entreprise'], v)} editing placeholder="Entreprise" className="flex-1" />
-                            <button onClick={() => removeParticipant('absents', i)} className="text-muted-foreground hover:text-destructive shrink-0">
-                              <X className="h-4 w-4" />
-                            </button>
+                            <button onClick={() => removeParticipant('absents', i)} className="text-muted-foreground hover:text-destructive shrink-0"><X className="h-4 w-4" /></button>
                           </>
                         ) : (
                           <span>• {[p.nom, p.qualite, p.entreprise].filter(Boolean).join(' — ')}</span>
@@ -501,23 +508,13 @@ export default function CrChantierPage() {
                     <CardTitle className="text-base flex items-center gap-2 flex-wrap">
                       LOT {lot.numero} — {lot.nom}
                       {isEditing ? (
-                        <EF
-                          value={lot.entreprise}
-                          onChange={v => update(['lots', lotIdx, 'entreprise'], v)}
-                          editing
-                          placeholder="Entreprise"
-                          className="font-normal text-muted-foreground text-sm"
-                        />
+                        <EF value={lot.entreprise} onChange={v => update(['lots', lotIdx, 'entreprise'], v)} editing placeholder="Entreprise" className="font-normal text-muted-foreground text-sm" />
                       ) : (
-                        lot.entreprise && (
-                          <span className="text-muted-foreground font-normal">({lot.entreprise})</span>
-                        )
+                        lot.entreprise && <span className="text-muted-foreground font-normal">({lot.entreprise})</span>
                       )}
                     </CardTitle>
                     {!isEditing && (
-                      expandedLots.has(lot.numero)
-                        ? <ChevronUp className="h-4 w-4 shrink-0" />
-                        : <ChevronDown className="h-4 w-4 shrink-0" />
+                      expandedLots.has(lot.numero) ? <ChevronUp className="h-4 w-4 shrink-0" /> : <ChevronDown className="h-4 w-4 shrink-0" />
                     )}
                   </div>
                 </CardHeader>
@@ -529,33 +526,15 @@ export default function CrChantierPage() {
                         {isEditing ? (
                           <>
                             <div className="flex items-start gap-2">
-                              <EF
-                                value={pt.description}
-                                onChange={v => update(['lots', lotIdx, 'points', ptIdx, 'description'], v)}
-                                editing
-                                multiline
-                                placeholder="Description du point"
-                                className="flex-1"
-                              />
-                              <button
-                                onClick={() => removePoint(lotIdx, ptIdx)}
-                                className="text-muted-foreground hover:text-destructive mt-1 shrink-0"
-                              >
-                                <X className="h-4 w-4" />
-                              </button>
+                              <EF value={pt.description} onChange={v => update(['lots', lotIdx, 'points', ptIdx, 'description'], v)} editing multiline placeholder="Description du point" className="flex-1" />
+                              <button onClick={() => removePoint(lotIdx, ptIdx)} className="text-muted-foreground hover:text-destructive mt-1 shrink-0"><X className="h-4 w-4" /></button>
                             </div>
                             {(['decision', 'action', 'responsable', 'delai'] as const).map(field => (
                               <div key={field} className="flex items-center gap-2">
                                 <span className="font-medium shrink-0 w-24 text-xs text-muted-foreground">
                                   {field === 'delai' ? 'Délai' : field.charAt(0).toUpperCase() + field.slice(1)} :
                                 </span>
-                                <EF
-                                  value={pt[field]}
-                                  onChange={v => update(['lots', lotIdx, 'points', ptIdx, field], v)}
-                                  editing
-                                  placeholder="—"
-                                  className="flex-1"
-                                />
+                                <EF value={pt[field]} onChange={v => update(['lots', lotIdx, 'points', ptIdx, field], v)} editing placeholder="—" className="flex-1" />
                               </div>
                             ))}
                           </>
@@ -568,13 +547,52 @@ export default function CrChantierPage() {
                             {pt.delai && <p><span className="font-medium">Délai :</span> {pt.delai}</p>}
                           </>
                         )}
+
+                        {/* Photos du point */}
+                        {(pt.photos?.length ?? 0) > 0 && (
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {pt.photos!.map((photo, photoIdx) => (
+                              <div key={photoIdx} className="relative group">
+                                <img
+                                  src={`data:${photo.mime};base64,${photo.data}`}
+                                  alt={photo.filename}
+                                  className="h-16 w-auto max-w-[6rem] rounded border border-border object-cover"
+                                />
+                                <p className="text-[10px] text-muted-foreground text-center mt-0.5">
+                                  {formatPhotoDate(photo.timestamp)}
+                                </p>
+                                {isEditing && (
+                                  <button
+                                    onClick={() => removePhoto(lotIdx, ptIdx, photoIdx)}
+                                    className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Ajouter une photo (toujours visible, pas seulement en édition) */}
+                        <label className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary cursor-pointer mt-1 w-fit">
+                          <Camera className="h-3 w-3" />
+                          <span>Photo</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async e => {
+                              const file = e.target.files?.[0];
+                              if (file) await addPhoto(lotIdx, ptIdx, file);
+                              e.target.value = '';
+                            }}
+                          />
+                        </label>
                       </div>
                     ))}
                     {isEditing && (
-                      <button
-                        onClick={() => addPoint(lotIdx)}
-                        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
-                      >
+                      <button onClick={() => addPoint(lotIdx)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">
                         <Plus className="h-3 w-3" /> Ajouter un point
                       </button>
                     )}
@@ -587,25 +605,14 @@ export default function CrChantierPage() {
           {/* Divers */}
           {(crData.divers?.filter(Boolean).length > 0 || isEditing) && (
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Questions / Divers</CardTitle>
-              </CardHeader>
+              <CardHeader className="pb-2"><CardTitle className="text-base">Questions / Divers</CardTitle></CardHeader>
               <CardContent className="space-y-1">
                 {crData.divers.map((d, i) => (
                   <div key={i} className="flex items-start gap-2 text-sm">
                     {isEditing ? (
                       <>
-                        <EF
-                          value={d}
-                          onChange={v => update(['divers', i], v)}
-                          editing
-                          multiline
-                          placeholder="Point divers…"
-                          className="flex-1"
-                        />
-                        <button onClick={() => removeDivers(i)} className="text-muted-foreground hover:text-destructive shrink-0 mt-1">
-                          <X className="h-4 w-4" />
-                        </button>
+                        <EF value={d} onChange={v => update(['divers', i], v)} editing multiline placeholder="Point divers…" className="flex-1" />
+                        <button onClick={() => removeDivers(i)} className="text-muted-foreground hover:text-destructive shrink-0 mt-1"><X className="h-4 w-4" /></button>
                       </>
                     ) : (
                       <span>• {d}</span>
@@ -624,24 +631,14 @@ export default function CrChantierPage() {
           {/* Diffusion */}
           {(crData.diffusion?.filter(Boolean).length > 0 || isEditing) && (
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Diffusion</CardTitle>
-              </CardHeader>
+              <CardHeader className="pb-2"><CardTitle className="text-base">Diffusion</CardTitle></CardHeader>
               <CardContent className="space-y-1">
                 {crData.diffusion.map((d, i) => (
                   <div key={i} className="flex items-center gap-2 text-sm">
                     {isEditing ? (
                       <>
-                        <EF
-                          value={d}
-                          onChange={v => update(['diffusion', i], v)}
-                          editing
-                          placeholder="Nom — Entreprise"
-                          className="flex-1"
-                        />
-                        <button onClick={() => removeDiffusion(i)} className="text-muted-foreground hover:text-destructive shrink-0">
-                          <X className="h-4 w-4" />
-                        </button>
+                        <EF value={d} onChange={v => update(['diffusion', i], v)} editing placeholder="Nom — Entreprise" className="flex-1" />
+                        <button onClick={() => removeDiffusion(i)} className="text-muted-foreground hover:text-destructive shrink-0"><X className="h-4 w-4" /></button>
                       </>
                     ) : (
                       <span>• {d}</span>
