@@ -38,7 +38,7 @@ app ArchitecteIA {
       //   (RequestPasswordReset(Route|Page), PasswordReset(Route|Page), EmailVerification(Route|Page))
       email: {
         fromField: {
-          name: "Open SaaS App",
+          name: "ArchitecteIA",
           email: "me@example.com"
         },
         emailVerification: {
