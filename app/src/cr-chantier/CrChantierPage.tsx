@@ -388,14 +388,57 @@ export default function CrChantierPage() {
               <CardDescription>Choisissez entre un fichier audio ou une transcription texte.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-3">
-                <Button variant={mode === 'audio' ? 'default' : 'outline'} onClick={() => setMode('audio')} className="flex gap-2">
-                  <Mic className="h-4 w-4" /> Audio
+              <div className="flex gap-3 flex-wrap">
+                <Button variant={mode === 'record' ? 'default' : 'outline'} onClick={() => { setMode('record'); setAudioFile(null); }} className="flex gap-2">
+                  <Mic className="h-4 w-4" /> Enregistrer
+                </Button>
+                <Button variant={mode === 'audio' ? 'default' : 'outline'} onClick={() => { setMode('audio'); setAudioFile(null); }} className="flex gap-2">
+                  <Upload className="h-4 w-4" /> Fichier audio
                 </Button>
                 <Button variant={mode === 'text' ? 'default' : 'outline'} onClick={() => setMode('text')} className="flex gap-2">
-                  <FileText className="h-4 w-4" /> Transcription texte
+                  <FileText className="h-4 w-4" /> Texte
                 </Button>
               </div>
+
+              {mode === 'record' && (
+                <div className="rounded-lg border-2 border-dashed p-8 text-center space-y-4">
+                  {!isRecording && !audioFile && (
+                    <>
+                      <Mic className="h-10 w-10 mx-auto text-muted-foreground" />
+                      <p className="font-medium">Cliquez pour démarrer l'enregistrement</p>
+                      <p className="text-sm text-muted-foreground">Votre navigateur accèdera au micro</p>
+                      <Button onClick={startRecording} size="lg" className="flex gap-2 mx-auto">
+                        <Mic className="h-4 w-4" /> Démarrer
+                      </Button>
+                    </>
+                  )}
+                  {isRecording && (
+                    <>
+                      <div className="flex items-center justify-center gap-3">
+                        <span className="h-3 w-3 rounded-full bg-red-500 animate-pulse" />
+                        <span className="text-lg font-mono font-semibold">
+                          {String(Math.floor(recordingSeconds / 60)).padStart(2, '0')}:{String(recordingSeconds % 60).padStart(2, '0')}
+                        </span>
+                      </div>
+                      <p className="text-muted-foreground text-sm">Enregistrement en cours…</p>
+                      <Button onClick={stopRecording} variant="destructive" size="lg" className="flex gap-2 mx-auto">
+                        <Square className="h-4 w-4" /> Arrêter
+                      </Button>
+                    </>
+                  )}
+                  {!isRecording && audioFile && (
+                    <>
+                      <CheckCircle2 className="h-8 w-8 mx-auto text-green-600" />
+                      <p className="font-medium text-green-700">
+                        Enregistrement terminé — {String(Math.floor(recordingSeconds / 60)).padStart(2, '0')}:{String(recordingSeconds % 60).padStart(2, '0')}
+                      </p>
+                      <Button variant="outline" size="sm" onClick={() => { setAudioFile(null); setRecordingSeconds(0); }}>
+                        Recommencer
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
 
               {mode === 'audio' && (
                 <div
