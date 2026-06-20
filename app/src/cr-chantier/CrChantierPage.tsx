@@ -563,7 +563,7 @@ export default function CrChantierPage() {
               <span className="font-semibold">Compte rendu généré</span>
             </div>
             <div className="flex gap-2 flex-wrap">
-              <Button variant="outline" onClick={() => { setStep('input'); setProgress(0); setCrData(null); setIsEditing(false); setIsSaved(false); }}>
+              <Button variant="outline" onClick={() => { setStep('input'); setProgress(0); setCrData(null); setIsEditing(false); setIsSaved(false); setAudioClips([]); setClipDurations([]); setAudioFile(null); }}>
                 Nouveau CR
               </Button>
               <Button
