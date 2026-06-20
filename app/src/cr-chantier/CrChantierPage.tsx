@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery } from 'wasp/client/operations';
 import { getCrsByUser, saveCr, deleteCr } from 'wasp/client/operations';
 import { type CrChantier } from 'wasp/entities';
@@ -10,12 +10,12 @@ import { Progress } from '../client/components/ui/progress';
 import { useToast } from '../client/hooks/use-toast';
 import {
   Mic, FileText, Download, ChevronDown, ChevronUp,
-  Loader2, CheckCircle2, Upload, Pencil, Plus, X, Check, Camera,
+  Loader2, CheckCircle2, Upload, Pencil, Plus, X, Check, Camera, Square,
 } from 'lucide-react';
 
 const CR_URL = (import.meta.env as any).REACT_APP_CR_URL || 'http://localhost:8003';
 
-type InputMode = 'audio' | 'text';
+type InputMode = 'audio' | 'record' | 'text';
 type Step = 'input' | 'processing' | 'result';
 
 interface PhotoAttachment {
