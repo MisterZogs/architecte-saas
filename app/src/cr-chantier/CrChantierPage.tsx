@@ -208,6 +208,40 @@ export default function CrChantierPage() {
       return next;
     });
 
+  const openSavedCr = (saved: CrChantier) => {
+    const data = saved.crData as CrData;
+    setProjet(saved.projet);
+    setCrData(data);
+    setExpandedLots(new Set(data.lots?.map((l) => l.numero) ?? []));
+    setIsEditing(false);
+    setIsSaved(true);
+    setStep('result');
+  };
+
+  const handleDeleteCr = async (id: string) => {
+    await deleteCr({ id });
+    refetchHistory();
+  };
+
+  const handleSaveCr = async () => {
+    if (!crData) return;
+    setIsSaving(true);
+    try {
+      await saveCr({
+        projet,
+        dateReunion: crData.date_reunion || undefined,
+        crData: crData as object,
+      });
+      setIsSaved(true);
+      refetchHistory();
+      toast({ title: 'CR sauvegardé dans l\'historique' });
+    } catch (err: any) {
+      toast({ title: 'Erreur sauvegarde', description: err.message, variant: 'destructive' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleAudioDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
