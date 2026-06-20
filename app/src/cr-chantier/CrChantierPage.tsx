@@ -141,6 +141,42 @@ export default function CrChantierPage() {
 
   const { data: history, refetch: refetchHistory } = useQuery(getCrsByUser);
 
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      mediaRecorderRef.current?.stream?.getTracks().forEach(t => t.stop());
+    };
+  }, []);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
+      const recorder = new MediaRecorder(stream, { mimeType });
+      chunksRef.current = [];
+      recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+      recorder.onstop = () => {
+        stream.getTracks().forEach(t => t.stop());
+        const blob = new Blob(chunksRef.current, { type: mimeType });
+        const ext = mimeType.includes('webm') ? 'webm' : 'mp4';
+        setAudioFile(new File([blob], `enregistrement.${ext}`, { type: mimeType }));
+        if (timerRef.current) clearInterval(timerRef.current);
+      };
+      recorder.start(1000);
+      mediaRecorderRef.current = recorder;
+      setIsRecording(true);
+      setRecordingSeconds(0);
+      timerRef.current = setInterval(() => setRecordingSeconds(s => s + 1), 1000);
+    } catch {
+      toast({ title: 'Microphone inaccessible', description: 'Autorisez l\'accès au micro dans votre navigateur.', variant: 'destructive' });
+    }
+  };
+
+  const stopRecording = () => {
+    mediaRecorderRef.current?.stop();
+    setIsRecording(false);
+  };
+
   const toggleLot = (num: string) =>
     setExpandedLots(prev => {
       const next = new Set(prev);
