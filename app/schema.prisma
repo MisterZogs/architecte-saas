@@ -26,6 +26,7 @@ model User {
   contactFormMessages       ContactFormMessage[]
   tasks                     Task[]
   files                     File[]
+  crChantiers               CrChantier[]
 }
 
 model GptResponse {
