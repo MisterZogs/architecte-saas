@@ -133,6 +133,23 @@ model CrChantier {
   projetChantierId String?
 }
 
+model CabinetSettings {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String   @unique
+
+  nomCabinet  String?
+  adresse     String?
+  telephone   String?
+  email       String?
+  siteWeb     String?
+  logo        String?  // base64
+  logoMime    String?  // 'image/png' | 'image/jpeg'
+}
+
 model ContactFormMessage {
   id                        String          @id @default(uuid())
   createdAt                 DateTime        @default(now())
