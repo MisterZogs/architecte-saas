@@ -155,6 +155,7 @@ export default function CrChantierPage() {
 
   const { data: history, refetch: refetchHistory } = useQuery(getCrsByUser);
   const { data: projets, refetch: refetchProjets } = useQuery(getProjetsByUser);
+  const { data: cabinetSettings } = useQuery(getCabinetSettings);
 
   const selectedProjet = projets?.find(p => p.id === selectedProjetId);
   const projetNom = selectedProjetId === 'new' ? nouveauNom : (selectedProjet?.nom ?? '');
