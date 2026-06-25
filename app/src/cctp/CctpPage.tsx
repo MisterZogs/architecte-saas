@@ -64,6 +64,7 @@ interface ProjectHistory {
 
 export default function CctpPage() {
   const { toast } = useToast();
+  const { data: cabinetSettings } = useQuery(getCabinetSettings);
   const [step, setStep] = useState<Step>('form');
   const [form, setForm] = useState<ProjectForm>({
     name: '',
