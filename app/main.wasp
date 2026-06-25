@@ -158,14 +158,34 @@ query getCrsByUser {
   entities: [CrChantier]
 }
 
+query getProjetsByUser {
+  fn: import { getProjetsByUser } from "@src/cr-chantier/operations",
+  entities: [ProjetChantier]
+}
+
 action saveCr {
   fn: import { saveCr } from "@src/cr-chantier/operations",
-  entities: [CrChantier]
+  entities: [CrChantier, ProjetChantier]
 }
 
 action deleteCr {
   fn: import { deleteCr } from "@src/cr-chantier/operations",
   entities: [CrChantier]
+}
+
+action createProjet {
+  fn: import { createProjet } from "@src/cr-chantier/operations",
+  entities: [ProjetChantier]
+}
+
+action updateProjet {
+  fn: import { updateProjet } from "@src/cr-chantier/operations",
+  entities: [ProjetChantier]
+}
+
+action deleteProjet {
+  fn: import { deleteProjet } from "@src/cr-chantier/operations",
+  entities: [ProjetChantier]
 }
 //#endregion
 
