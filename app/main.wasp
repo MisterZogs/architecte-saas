@@ -189,6 +189,24 @@ action deleteProjet {
 }
 //#endregion
 
+//#region Cabinet
+route CabinetSettingsRoute { path: "/parametres", to: CabinetSettingsPage }
+page CabinetSettingsPage {
+  authRequired: true,
+  component: import CabinetSettingsPage from "@src/cabinet/CabinetSettingsPage"
+}
+
+query getCabinetSettings {
+  fn: import { getCabinetSettings } from "@src/cabinet/operations",
+  entities: [CabinetSettings]
+}
+
+action saveCabinetSettings {
+  fn: import { saveCabinetSettings } from "@src/cabinet/operations",
+  entities: [CabinetSettings]
+}
+//#endregion
+
 //#region CCTP
 route CctpRoute { path: "/cctp", to: CctpPage }
 page CctpPage {
