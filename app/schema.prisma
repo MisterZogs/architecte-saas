@@ -28,6 +28,7 @@ model User {
   files                     File[]
   crChantiers               CrChantier[]
   projetsChantier           ProjetChantier[]
+  cabinetSettings           CabinetSettings?
 }
 
 model GptResponse {
