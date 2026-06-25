@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from 'wasp/client/operations';
+import { getCabinetSettings } from 'wasp/client/operations';
 import { Button } from '../client/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../client/components/ui/card';
 import { Input } from '../client/components/ui/input';
