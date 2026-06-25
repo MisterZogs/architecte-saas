@@ -27,6 +27,7 @@ model User {
   tasks                     Task[]
   files                     File[]
   crChantiers               CrChantier[]
+  projetsChantier           ProjetChantier[]
 }
 
 model GptResponse {
