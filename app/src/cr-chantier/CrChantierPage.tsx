@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useQuery } from 'wasp/client/operations';
-import { getCrsByUser, saveCr, deleteCr } from 'wasp/client/operations';
-import { type CrChantier } from 'wasp/entities';
+import { getCrsByUser, getProjetsByUser, saveCr, deleteCr, createProjet, deleteProjet } from 'wasp/client/operations';
+import { type CrChantier, type ProjetChantier } from 'wasp/entities';
 import { Button } from '../client/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../client/components/ui/card';
 import { Input } from '../client/components/ui/input';
@@ -11,6 +11,7 @@ import { useToast } from '../client/hooks/use-toast';
 import {
   Mic, FileText, Download, ChevronDown, ChevronUp,
   Loader2, CheckCircle2, Upload, Pencil, Plus, X, Check, Camera, Square,
+  FolderOpen, Trash2,
 } from 'lucide-react';
 
 const CR_URL = (import.meta.env as any).REACT_APP_CR_URL || 'http://localhost:8003';
@@ -19,9 +20,9 @@ type InputMode = 'audio' | 'record' | 'text';
 type Step = 'input' | 'processing' | 'result';
 
 interface PhotoAttachment {
-  data: string;      // base64 sans le préfixe data URL
+  data: string;
   filename: string;
-  timestamp: string; // ISO — extrait de file.lastModified (= heure de prise sur mobile)
+  timestamp: string;
   mime: string;
 }
 
@@ -121,7 +122,13 @@ export default function CrChantierPage() {
   const { toast } = useToast();
   const [step, setStep] = useState<Step>('input');
   const [mode, setMode] = useState<InputMode>('audio');
-  const [projet, setProjet] = useState('');
+
+  // Projet selection
+  const [selectedProjetId, setSelectedProjetId] = useState<string | 'new'>('new');
+  const [nouveauNom, setNouveauNom] = useState('');
+  const [nouveauAdresse, setNouveauAdresse] = useState('');
+  const [showProjetManager, setShowProjetManager] = useState(false);
+
   const [transcription, setTranscription] = useState('');
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioClips, setAudioClips] = useState<File[]>([]);
@@ -147,6 +154,10 @@ export default function CrChantierPage() {
   const totalRecordingSeconds = clipDurations.reduce((a, b) => a + b, 0);
 
   const { data: history, refetch: refetchHistory } = useQuery(getCrsByUser);
+  const { data: projets, refetch: refetchProjets } = useQuery(getProjetsByUser);
+
+  const selectedProjet = projets?.find(p => p.id === selectedProjetId);
+  const projetNom = selectedProjetId === 'new' ? nouveauNom : (selectedProjet?.nom ?? '');
 
   useEffect(() => {
     return () => {
@@ -265,7 +276,12 @@ export default function CrChantierPage() {
 
   const openSavedCr = (saved: CrChantier) => {
     const data = saved.crData as unknown as CrData;
-    setProjet(saved.projet);
+    if (saved.projetChantierId) {
+      setSelectedProjetId(saved.projetChantierId);
+    } else {
+      setSelectedProjetId('new');
+      setNouveauNom(saved.projet);
+    }
     setCrData(data);
     setExpandedLots(new Set(data.lots?.map((l) => l.numero) ?? []));
     setIsEditing(false);
@@ -278,18 +294,41 @@ export default function CrChantierPage() {
     refetchHistory();
   };
 
+  const handleDeleteProjet = async (id: string) => {
+    await deleteProjet({ id });
+    if (selectedProjetId === id) setSelectedProjetId('new');
+    refetchProjets();
+    toast({ title: 'Projet supprimé' });
+  };
+
   const handleSaveCr = async () => {
     if (!crData) return;
     setIsSaving(true);
     try {
+      let projetId: string | undefined;
+
+      if (selectedProjetId === 'new') {
+        if (nouveauNom.trim()) {
+          const created = await createProjet({ nom: nouveauNom.trim(), adresse: nouveauAdresse.trim() || undefined });
+          projetId = created.id;
+          setSelectedProjetId(created.id);
+          refetchProjets();
+        }
+      } else {
+        projetId = selectedProjetId;
+      }
+
       await saveCr({
-        projet,
+        projet: projetNom,
         dateReunion: crData.date_reunion || undefined,
         crData: crData as { [key: string]: any },
+        projetId,
+        updateProjetData: true,
       });
       setIsSaved(true);
       refetchHistory();
-      toast({ title: 'CR sauvegardé dans l\'historique' });
+      refetchProjets();
+      toast({ title: 'CR sauvegardé et projet mis à jour' });
     } catch (err: any) {
       toast({ title: 'Erreur sauvegarde', description: err.message, variant: 'destructive' });
     } finally {
@@ -304,7 +343,7 @@ export default function CrChantierPage() {
   };
 
   const handleGenerate = async () => {
-    if (!projet.trim()) { toast({ title: 'Nom du projet requis', variant: 'destructive' }); return; }
+    if (!projetNom.trim()) { toast({ title: 'Nom du projet requis', variant: 'destructive' }); return; }
     if (mode === 'record' && audioClips.length === 0) { toast({ title: 'Aucun enregistrement', description: 'Enregistrez au moins un extrait audio.', variant: 'destructive' }); return; }
     if (mode === 'audio' && !audioFile) { toast({ title: 'Fichier audio requis', variant: 'destructive' }); return; }
     if (mode === 'text' && !transcription.trim()) { toast({ title: 'Transcription requise', variant: 'destructive' }); return; }
@@ -343,10 +382,20 @@ export default function CrChantierPage() {
 
       setProgressLabel('Structuration du compte rendu…');
       setProgress(70);
+
+      const contextProjet = selectedProjet ? {
+        lotsRecurrents: selectedProjet.lotsRecurrents as any[],
+        intervenants: selectedProjet.intervenants as any[],
+      } : null;
+
       const res = await fetch(`${CR_URL}/api/structure`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transcription: finalTranscription, projet }),
+        body: JSON.stringify({
+          transcription: finalTranscription,
+          projet: projetNom,
+          ...(contextProjet && { context_projet: contextProjet }),
+        }),
       });
       if (!res.ok) throw new Error('Erreur structuration');
       const cr = await res.json();
@@ -371,14 +420,14 @@ export default function CrChantierPage() {
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cr: crData, projet }),
+        body: JSON.stringify({ cr: crData, projet: projetNom }),
       });
       if (!res.ok) throw new Error(`Erreur export ${format.toUpperCase()}`);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `CR_Chantier_${projet.replace(/\s+/g, '_')}.${format}`;
+      a.download = `CR_Chantier_${projetNom.replace(/\s+/g, '_')}.${format}`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (err: any) {
@@ -386,6 +435,18 @@ export default function CrChantierPage() {
     } finally {
       if (format === 'pdf') setIsPdfLoading(false);
     }
+  };
+
+  const resetForm = () => {
+    setStep('input');
+    setProgress(0);
+    setCrData(null);
+    setIsEditing(false);
+    setIsSaved(false);
+    setAudioClips([]);
+    setClipDurations([]);
+    setAudioFile(null);
+    setTranscription('');
   };
 
   return (
@@ -400,14 +461,89 @@ export default function CrChantierPage() {
       {/* ── Étape 1 : saisie ── */}
       {step === 'input' && (
         <div className="space-y-6">
+
+          {/* Sélecteur de projet */}
           <Card>
-            <CardHeader><CardTitle>1 — Nom du projet</CardTitle></CardHeader>
-            <CardContent>
-              <Input
-                placeholder="ex. Maison Dupont — 12 rue des Lilas, Lyon"
-                value={projet}
-                onChange={e => setProjet(e.target.value)}
-              />
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>1 — Projet</span>
+                {projets && projets.length > 0 && (
+                  <button
+                    onClick={() => setShowProjetManager(v => !v)}
+                    className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+                  >
+                    <FolderOpen className="h-3 w-3" />
+                    {showProjetManager ? 'Masquer' : 'Gérer les projets'}
+                  </button>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {/* Dropdown si des projets existent */}
+              {projets && projets.length > 0 && (
+                <select
+                  className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+                  value={selectedProjetId}
+                  onChange={e => setSelectedProjetId(e.target.value as string | 'new')}
+                >
+                  <option value="new">+ Nouveau projet</option>
+                  {projets.map(p => (
+                    <option key={p.id} value={p.id}>{p.nom}{p.adresse ? ` — ${p.adresse}` : ''}</option>
+                  ))}
+                </select>
+              )}
+
+              {/* Champs pour nouveau projet */}
+              {selectedProjetId === 'new' && (
+                <div className="space-y-2">
+                  <Input
+                    placeholder="Nom du projet (ex. Maison Dupont — 12 rue des Lilas)"
+                    value={nouveauNom}
+                    onChange={e => setNouveauNom(e.target.value)}
+                  />
+                  <Input
+                    placeholder="Adresse (optionnel)"
+                    value={nouveauAdresse}
+                    onChange={e => setNouveauAdresse(e.target.value)}
+                    className="text-sm"
+                  />
+                </div>
+              )}
+
+              {/* Récap projet sélectionné */}
+              {selectedProjet && (
+                <div className="text-sm text-muted-foreground space-y-0.5">
+                  {selectedProjet.adresse && <p>{selectedProjet.adresse}</p>}
+                  {(selectedProjet.lotsRecurrents as any[]).length > 0 && (
+                    <p className="text-xs">
+                      {(selectedProjet.lotsRecurrents as any[]).length} lot(s) connu(s) · contexte injecté automatiquement
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Gestionnaire de projets */}
+              {showProjetManager && projets && projets.length > 0 && (
+                <div className="border rounded-lg divide-y mt-2">
+                  {projets.map(p => (
+                    <div key={p.id} className="flex items-center justify-between px-3 py-2 text-sm">
+                      <div>
+                        <p className="font-medium">{p.nom}</p>
+                        {p.adresse && <p className="text-xs text-muted-foreground">{p.adresse}</p>}
+                        <p className="text-xs text-muted-foreground">
+                          {(p.lotsRecurrents as any[]).length} lot(s) · {(p.intervenants as any[]).length} intervenant(s)
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteProjet(p.id)}
+                        className="text-muted-foreground hover:text-destructive p-1"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -431,7 +567,6 @@ export default function CrChantierPage() {
 
               {mode === 'record' && (
                 <div className="rounded-lg border-2 border-dashed p-6 space-y-4">
-                  {/* Clips enregistrés */}
                   {audioClips.length > 0 && (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-sm font-medium">
@@ -464,7 +599,6 @@ export default function CrChantierPage() {
                     </div>
                   )}
 
-                  {/* Enregistrement en cours */}
                   {isRecording ? (
                     <div className="text-center space-y-3">
                       <div className="flex items-center justify-center gap-3">
@@ -539,27 +673,31 @@ export default function CrChantierPage() {
           {history && history.length > 0 && (
             <div className="space-y-2">
               <h2 className="text-lg font-semibold">Historique</h2>
-              {history.map((cr) => (
-                <div key={cr.id} className="flex items-center justify-between p-3 border rounded-lg text-sm">
-                  <div>
-                    <p className="font-medium">{cr.projet}</p>
-                    <p className="text-muted-foreground text-xs">
-                      {cr.dateReunion ?? new Date(cr.createdAt).toLocaleDateString('fr-FR')}
-                    </p>
+              {history.map((cr) => {
+                const linkedProjet = projets?.find(p => p.id === cr.projetChantierId);
+                return (
+                  <div key={cr.id} className="flex items-center justify-between p-3 border rounded-lg text-sm">
+                    <div>
+                      <p className="font-medium">{cr.projet}</p>
+                      <p className="text-muted-foreground text-xs">
+                        {cr.dateReunion ?? new Date(cr.createdAt).toLocaleDateString('fr-FR')}
+                        {linkedProjet && <span className="ml-2 text-primary/70">· {linkedProjet.nom}</span>}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => openSavedCr(cr)}>Ouvrir</Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteCr(cr.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => openSavedCr(cr)}>Ouvrir</Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteCr(cr.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -588,7 +726,7 @@ export default function CrChantierPage() {
               <span className="font-semibold">Compte rendu généré</span>
             </div>
             <div className="flex gap-2 flex-wrap">
-              <Button variant="outline" onClick={() => { setStep('input'); setProgress(0); setCrData(null); setIsEditing(false); setIsSaved(false); setAudioClips([]); setClipDurations([]); setAudioFile(null); }}>
+              <Button variant="outline" onClick={resetForm}>
                 Nouveau CR
               </Button>
               <Button
@@ -637,7 +775,7 @@ export default function CrChantierPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-medium shrink-0">Projet :</span>
-                  <span>{projet}</span>
+                  <span>{projetNom}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-medium shrink-0">Date :</span>
@@ -764,7 +902,6 @@ export default function CrChantierPage() {
                           </>
                         )}
 
-                        {/* Photos du point */}
                         {(pt.photos?.length ?? 0) > 0 && (
                           <div className="flex flex-wrap gap-2 mt-2">
                             {pt.photos!.map((photo, photoIdx) => (
@@ -790,7 +927,6 @@ export default function CrChantierPage() {
                           </div>
                         )}
 
-                        {/* Ajouter une photo (toujours visible, pas seulement en édition) */}
                         <label className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary cursor-pointer mt-1 w-fit">
                           <Camera className="h-3 w-3" />
                           <span>Photo</span>
