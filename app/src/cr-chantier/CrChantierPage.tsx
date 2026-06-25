@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useQuery } from 'wasp/client/operations';
-import { getCrsByUser, getProjetsByUser, saveCr, deleteCr, createProjet, deleteProjet } from 'wasp/client/operations';
+import { getCrsByUser, getProjetsByUser, getCabinetSettings, saveCr, deleteCr, createProjet, deleteProjet } from 'wasp/client/operations';
 import { type CrChantier, type ProjetChantier } from 'wasp/entities';
 import { Button } from '../client/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../client/components/ui/card';
