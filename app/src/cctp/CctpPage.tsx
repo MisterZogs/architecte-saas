@@ -170,7 +170,20 @@ export default function CctpPage() {
   };
 
   const downloadLot = async (cctp: CctpResult) => {
-    const res = await fetch(`${CCTP_URL}/api/v1/cctp/${cctp.id}/export`);
+    const cabinet = cabinetSettings ? {
+      nomCabinet: cabinetSettings.nomCabinet,
+      adresse: cabinetSettings.adresse,
+      telephone: cabinetSettings.telephone,
+      email: cabinetSettings.email,
+      siteWeb: cabinetSettings.siteWeb,
+      logo: cabinetSettings.logo,
+      logoMime: cabinetSettings.logoMime,
+    } : null;
+    const res = await fetch(`${CCTP_URL}/api/v1/cctp/${cctp.id}/export`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cabinet }),
+    });
     if (!res.ok) return toast({ title: 'Erreur export', variant: 'destructive' });
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
