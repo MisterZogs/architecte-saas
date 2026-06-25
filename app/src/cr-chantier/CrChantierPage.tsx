@@ -418,10 +418,19 @@ export default function CrChantierPage() {
     if (format === 'pdf') setIsPdfLoading(true);
     try {
       const endpoint = format === 'pdf' ? `${CR_URL}/api/export/pdf` : `${CR_URL}/api/export`;
+      const cabinet = cabinetSettings ? {
+        nomCabinet: cabinetSettings.nomCabinet,
+        adresse: cabinetSettings.adresse,
+        telephone: cabinetSettings.telephone,
+        email: cabinetSettings.email,
+        siteWeb: cabinetSettings.siteWeb,
+        logo: cabinetSettings.logo,
+        logoMime: cabinetSettings.logoMime,
+      } : null;
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cr: crData, projet: projetNom }),
+        body: JSON.stringify({ cr: crData, projet: projetNom, ...(cabinet && { cabinet }) }),
       });
       if (!res.ok) throw new Error(`Erreur export ${format.toUpperCase()}`);
       const blob = await res.blob();
